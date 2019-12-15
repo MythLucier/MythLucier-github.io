@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-Complexity-Analysis" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/12/15/Complexity-Analysis/" class="article-date">
+  <time datetime="2019-12-15T14:22:53.000Z" itemprop="datePublished">2019-12-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/12/15/Complexity-Analysis/">Complexity-Analysis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#复杂度分析</p>
+<p>复杂度也叫渐进复杂度,包括时间复杂度和空间复杂度，用来分析算法执行效率与数据规模之间的增长关系，可以粗略的表示，越高阶复杂度的算法，执行效率越低。</p>
+<p>##1.时间复杂度</p>
+<p>###1.1时间复杂度计算方式</p>
+<pre><code>int cal(int n) { 
+    int sum = 0; 
+    int i = 1; 
+    for (; i &lt;= n; ++i) { 
+        sum = sum + i;
+    }
+    return sum; 
+}</code></pre><p>由上面代码例子，时间复杂度未O(n),因为又一个for循环，它在for循环里需要运行n遍，所以n很大时可以忽略其他固定时间的步骤，所以是O(n)</p>
+<p>由此类推</p>
+<pre><code>int cal(int n) {
+    int sum = 0; 
+    int i = 1; 
+    int j = 1;
+    for (; i &lt;= n; ++i) {
+        j = 1;
+        for (; j &lt;= n; ++j){ 
+            sum = sum + i * j;
+        }
+     } 
+}</code></pre><p>以上代码的时间复杂度未O(n^2)</p>
+<p><strong>时间复杂度计算公式T(n) = O(f(n))</strong></p>
+<p><strong>其中T(n)为代码执行时间,f(n)是代码执行总次数,O代表代码的执行时间T(n)和f(n)表达式成正比</strong>    (f(n)可以将常数忽略<strong>[自己补充的]</strong>)</p>
+<p>###1.2乘法法则</p>
+<p>在函数嵌套时使用乘法法则和上面for循环嵌套例子一样</p>
+<pre><code>int c1(int n){
+    int sum = 0;
+    for(int i = 0; i &lt;= n; i++){
+        sum += 1;
+    }
+    return sum;
+}
+int c2(int n){
+    int sum = 0;
+    for(int i = 0; i &lt;= n; i++){
+        sum += c1(n);
+    }
+    return sum;
+}
+int example(int n){
+    int sum = 0;
+    for(int i = 0; i &lt;= n; i++){
+        sum += c2(n);
+    }
+    return sum;
+}
+int main(){
+    cout &lt;&lt; example(n);
+}</code></pre><p>该例子的复杂度为O(n^3)</p>
+<p>###1.3复杂度量级</p>
+<img src="/2019/12/15/Complexity-Analysis/1.jpg" class="" title="This is an example image">
+
+<hr>
+<img src="/2019/12/15/Complexity-Analysis/2.jpg" class="" title="This is an example image">
+
+<p>O(logn) 例子折半查找</p>
+<p>O(nlogn) 例子快速排序</p>
+<p>###1.4最坏、最好情况时间复杂度</p>
+<pre><code>// n表示数组array的长度
+int find(int[] array, int n, int x) { 
+    int i = 0; 
+    int pos = -1; 
+    for (; i &lt; n; ++i) { 
+        if (array[i] == x) { 
+            pos = i; 
+            break; 
+        } 
+    } 
+    return pos;
+}</code></pre><p>由以上例子是查找x元素在数组中的下标，如果x在数组中的下标为0，那么时间复杂度就是最好的情况<strong>O(1)</strong>,<br>如果是最后一个那就是最坏的情况<strong>O(n)</strong></p>
+<p>###1.5平均复杂度</p>
+<p>就是计算一个算法执行时间的平均值，把所有可能列出来取平均值</p>
+<img src="/2019/12/15/Complexity-Analysis/3.jpg" class="" title="This is an example image">
+
+<p>数组的0-n-1和不在数组情况</p>
+<p>##2.空间复杂度</p>
+<pre><code>void print(int n) { 
+    int i = 0; 
+    int[] a = new int[n]; 
+    for(i; i&lt;n; i++){
+        a[i] = i;
+    }
+    for (i; i = 0; --i) { 
+        print out a[i] }
+    }
+}</code></pre><p>这里的空间复杂度就为O(n),因为数组a的大小为n</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/12/15/Complexity-Analysis/" data-id="ck4741f210000rgwi275ub9og" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/12/15/Complexity-Analysis/">Complexity-Analysis</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
