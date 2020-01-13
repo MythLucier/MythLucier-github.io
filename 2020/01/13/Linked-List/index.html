@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Linked-List | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#2.链表 ##数组和链表 链表对于随机插入删除的时间复杂度是O(1),数组是O(n) 链表对于随机查询的时间复杂度是o(n),数组是O(1) 链表不需要申请一块连续的内存，而数组需要申请一块连续的内存 ，但是链表需要额外的空间储存指针，所以对于特定的一些情况来说就是属于空间换时间的概念 如果代码对于内存要求苛刻，那么数组就比链表更适合。因为链表需要额外的空间储存指针，所以内存会翻倍，而且对链表的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linked-List">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;Linked-List&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#2.链表 ##数组和链表 链表对于随机插入删除的时间复杂度是O(1),数组是O(n) 链表对于随机查询的时间复杂度是o(n),数组是O(1) 链表不需要申请一块连续的内存，而数组需要申请一块连续的内存 ，但是链表需要额外的空间储存指针，所以对于特定的一些情况来说就是属于空间换时间的概念 如果代码对于内存要求苛刻，那么数组就比链表更适合。因为链表需要额外的空间储存指针，所以内存会翻倍，而且对链表的">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;Linked-List&#x2F;1.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;Linked-List&#x2F;2.jpg">
+<meta property="article:published_time" content="2020-01-13T15:11:02.000Z">
+<meta property="article:modified_time" content="2020-01-13T15:12:40.407Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;Linked-List&#x2F;1.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Linked-List" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/Linked-List/" class="article-date">
+  <time datetime="2020-01-13T15:11:02.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linked-List
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#2.链表</p>
+<p>##数组和链表</p>
+<p>链表对于随机插入删除的时间复杂度是O(1),数组是O(n)</p>
+<p>链表对于随机查询的时间复杂度是o(n),数组是O(1)</p>
+<p>链表<strong>不需要申请一块连续的内存</strong>，而数组<strong>需要申请一块连续的内存</strong> ，但是链表需要额外的空间储存指针，所以对于特定的一些情况来说就是属于<strong>空间换时间</strong>的概念</p>
+<p>如果代码对于内存要求苛刻，那么数组就比链表更适合。因为链表需要额外的空间储存指针，所以内存会翻倍，而且对链表的频繁做掺入、删除的操作会导致<strong>频繁的内存申请和释放</strong> ，如果是java语言，就会导致频繁的GC(垃圾回收)</p>
+<p>##2.LRU缓存淘汰算法</p>
+<p>###2.1缓存</p>
+<p>缓存是一种提高数据读取性能的技术，在硬件设计和软件开发中都有着十分广泛的应用，比如常见的CPU缓存、数据库缓存、浏览器缓存等等。</p>
+<p>常见的三种策略：FIFO先进先出（First In First Out）、LFU最少使用策略(Least Frequently Used)、最近最少使用策略LRU(Least Recently Used)。</p>
+<p>##3.使用哨兵来简化链表实现的难度</p>
+<p>如果我们想要往后node加一个节点，那么代码很简单</p>
+<pre><code>p-&gt;next = node-&gt;next;
+node-&gt;next = p;</code></pre><p>但是如果往头节点插入一个节点那么逻辑就不太一样了</p>
+<pre><code>if(head == null){
+    head = p;
+}
+else{
+    p-&gt;next = head;
+    head = p;
+}</code></pre><p>删除的时候我们也是一样要做页数处理，</p>
+<pre><code>if(head-&gt;next == null){
+    head = null;
+}</code></pre><p>接下来我们就要引入哨兵这个节点，使head指针一直指向这个哨兵节点,<br>哨兵节点value值为null，指针指向头节点,我们也把带有哨兵节点的链表叫做<strong>带头链表</strong></p>
+<img src="/2020/01/13/Linked-List/1.jpg" class="" title="This is an example image">
+
+<p>实际上，这种利用哨兵简化编程难度的技巧，在很多代码实现中都有用到，比如插入排序、归并排序、动态规划等.</p>
+<p>##4.链表单表反转实现(自己想的)</p>
+<p>定义一个function(pre,node),其中node为当前节点，pre为shang一节点,代码</p>
+<pre><code>function(pre,node){
+    if(node-&gt;next != null){
+        fun(node,node-&gt;next);
+    }
+    node-&gt;next = pre;
+}</code></pre><p>调用时就将null为pre，head为node传入，代码</p>
+<pre><code>function(null,head);</code></pre><p>##判断链表是否有环，如果有求环节点</p>
+<p>如何判断有环，我们可以定义一个faster节点和一个slower节点，faster一次走2步，即faster = faster-&gt;next-&gt;next。slower走一步，即slower = slower-&gt;next。如果有环应为速度不一样所以迟早会相遇。</p>
+<p>代码</p>
+<pre><code>ListNode judgeCycle(ListNode head)
+{
+    if(head == null)
+        return null;
+    ListNode faster=head;
+    ListNode slower=head;
+    boolean flag = false;
+    while(faster.next != null &amp;&amp; faster.next.next != null)
+    {
+        faster = faster.next.next;
+        slower = slower.next;
+        if (faster == slower) {
+            flag = true;
+               return ture;
+        }
+    }
+    return false;
+}</code></pre><p>如何求换节点，首先如图</p>
+<img src="/2020/01/13/Linked-List/2.jpg" class="" title="This is an example image">
+
+
+<p><strong>推理</strong></p>
+<p>设环的长度为c(即m+l）,<br>fast走的路程:s+cround1+m<br>low走的路程:s+cround2+m;<br>fast路程是low路程的两倍，所以得出<br>s=c(2round1-round2)-m<br>=c(2round1-round2-1)+c-m<br>=c(2round1-round2-1)+I</p>
+<p><strong>我们由此得到了结论</strong><br>起点到环入口点s和相遇点到环路口点I的等式关系。<br>这个等式关系就充分说明了当指针low链表头开始，指针fast从相遇点开始，同时以一个步长往下走，必然会在第一个公共点相遇，当然，式子告诉我们可能fast先绕着环转个几圈再和low相遇。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/Linked-List/" data-id="ck5clk4gd0003a8wi7va01aux" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          栈+队列问题
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/12/15/Complexity-Analysis/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Complexity-Analysis</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Hash/">Hash</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/SkipList/">SkipList</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/halfFind/">halfFind</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

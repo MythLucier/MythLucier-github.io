@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>halfFind | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#二分查找 ##1.二分查找无处不在二分查找法也叫折半查找法，二分查找法是一个简单易懂的快速查找法，举个例子，对于1024个数据中找出一个准确的数字，只需要10次，对于再大的数据他的查找次数也只会是log2（N），所以时间复杂度是O(logn),而对数函数曲线我们也是了解的。但是对于二分查找法运用上的缺陷，那就是他只能运用在已排序好的数组了,其次数据量太小也不适合用二分查找法。 ##2.二分查找的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="halfFind">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;halfFind&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#二分查找 ##1.二分查找无处不在二分查找法也叫折半查找法，二分查找法是一个简单易懂的快速查找法，举个例子，对于1024个数据中找出一个准确的数字，只需要10次，对于再大的数据他的查找次数也只会是log2（N），所以时间复杂度是O(logn),而对数函数曲线我们也是了解的。但是对于二分查找法运用上的缺陷，那就是他只能运用在已排序好的数组了,其次数据量太小也不适合用二分查找法。 ##2.二分查找的">
+<meta property="article:published_time" content="2020-01-13T15:17:49.000Z">
+<meta property="article:modified_time" content="2020-01-13T15:18:06.962Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-halfFind" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/halfFind/" class="article-date">
+  <time datetime="2020-01-13T15:17:49.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      halfFind
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#二分查找</p>
+<p>##1.二分查找无处不在<br>二分查找法也叫折半查找法，二分查找法是一个简单易懂的快速查找法，举个例子，对于1024个数据中找出一个准确的数字，只需要10次，对于再大的数据他的查找次数也只会是log2（N），所以时间复杂度是O(logn),而对数函数曲线我们也是了解的。<br>但是对于二分查找法运用上的缺陷，那就是他只能运用在已排序好的数组了,其次数据量太小也不适合用二分查找法。</p>
+<p>##2.二分查找的实现<br>最简单的就是有序数组中不存在重复元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) {
+    int low = 0;
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = (low + high) / 2; 
+        if (a[mid] == value) { 
+            return mid; 
+        } 
+        else if (a[mid] &lt; value) {
+            low = mid + 1; 
+        } 
+        else { 
+            high = mid - 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>###2.1容易出错的 3 个地方。</p>
+<p>####2.1.1 循环退出条件<br>注意是 low&lt;=high，而不是 low&gt;1)。<br>####2.1.2 mid 的取值<br>实际上，mid=(low+high)/2 这种写法是有问题的。因为如果 low 和 high 比较大的话，两者之和就有可能会溢出。改进的方法是将 mid 的计算方式写成 low+(high-low)/2。更进一步，如果要将性能优化到极致的话，我们可以将这里的除以 2 操作转化成位运算 low+((high-low)&gt;&gt;1)。因为相比除法运算来说，计算机处理位运算要快得多。<br>####2.1.3 low 和 high 的更新<br>low=mid+1，high=mid-1。注意这里的 +1 和 -1，如果直接写成 low=mid 或者 high=mid，就可能会发生死循环。比如，当 high=3，low=3 时，如果 a[3] 不等于 value，就会导致一直循环不退出。</p>
+<p>##3.二分查找变形</p>
+<p>####3.1查找第一个值等于给定值的元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt; value) { 
+            high = mid - 1; 
+        } 
+        else if (a[mid] &lt; value) { 
+            low = mid + 1; 
+        } 
+        else { 
+            if ((mid == 0) || (a[mid - 1] != value))     
+                return mid; 
+            else 
+                high = mid - 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>####3.2查找最后一个值等于给定值的元素<br>和上面代码差不多</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt; value) { 
+            high = mid - 1; 
+        } 
+        else if (a[mid] &lt; value) { 
+            low = mid + 1; 
+        } 
+        else { 
+            if ((mid == n - 1) || (a[mid + 1] != value)) 
+                return mid; 
+            else 
+                low = mid + 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>####3.3查找第一个大于等于给定值的元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt;= value) { 
+            if ((mid == 0) || (a[mid - 1] &lt; value))
+                return mid; 
+            else 
+                high = mid - 1; 
+        } 
+        else { 
+            low = mid + 1; 
+        } 
+    } 
+    return -1;
+}</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/halfFind/" data-id="ck5clk4gg0006a8wia2dwe7en" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/01/13/SkipList/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SkipList
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/01/13/sort-3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">sort-3</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Hash/">Hash</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/SkipList/">SkipList</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/halfFind/">halfFind</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

@@ -63,10 +63,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Complexity-Analysis" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-HashTable-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/12/15/Complexity-Analysis/" class="article-date">
-  <time datetime="2019-12-15T14:22:53.000Z" itemprop="datePublished">2019-12-15</time>
+    <a href="/2020/01/13/HashTable-2/" class="article-date">
+  <time datetime="2020-01-13T15:19:43.000Z" itemprop="datePublished">2020-01-13</time>
 </a>
     
   </div>
@@ -77,7 +77,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/12/15/Complexity-Analysis/">Complexity-Analysis</a>
+      <a class="article-title" href="/2020/01/13/HashTable-2/">HashTable-2</a>
     </h1>
   
 
@@ -85,100 +85,614 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>#复杂度分析</p>
-<p>复杂度也叫渐进复杂度,包括时间复杂度和空间复杂度，用来分析算法执行效率与数据规模之间的增长关系，可以粗略的表示，越高阶复杂度的算法，执行效率越低。</p>
-<p>##1.时间复杂度</p>
-<p>###1.1时间复杂度计算方式</p>
-<pre><code>int cal(int n) { 
-    int sum = 0; 
-    int i = 1; 
-    for (; i &lt;= n; ++i) { 
-        sum = sum + i;
-    }
-    return sum; 
-}</code></pre><p>由上面代码例子，时间复杂度未O(n),因为又一个for循环，它在for循环里需要运行n遍，所以n很大时可以忽略其他固定时间的步骤，所以是O(n)</p>
-<p>由此类推</p>
-<pre><code>int cal(int n) {
-    int sum = 0; 
-    int i = 1; 
-    int j = 1;
-    for (; i &lt;= n; ++i) {
-        j = 1;
-        for (; j &lt;= n; ++j){ 
-            sum = sum + i * j;
-        }
-     } 
-}</code></pre><p>以上代码的时间复杂度未O(n^2)</p>
-<p><strong>时间复杂度计算公式T(n) = O(f(n))</strong></p>
-<p><strong>其中T(n)为代码执行时间,f(n)是代码执行总次数,O代表代码的执行时间T(n)和f(n)表达式成正比</strong>    (f(n)可以将常数忽略<strong>[自己补充的]</strong>)</p>
-<p>###1.2乘法法则</p>
-<p>在函数嵌套时使用乘法法则和上面for循环嵌套例子一样</p>
-<pre><code>int c1(int n){
-    int sum = 0;
-    for(int i = 0; i &lt;= n; i++){
-        sum += 1;
-    }
-    return sum;
-}
-int c2(int n){
-    int sum = 0;
-    for(int i = 0; i &lt;= n; i++){
-        sum += c1(n);
-    }
-    return sum;
-}
-int example(int n){
-    int sum = 0;
-    for(int i = 0; i &lt;= n; i++){
-        sum += c2(n);
-    }
-    return sum;
-}
-int main(){
-    cout &lt;&lt; example(n);
-}</code></pre><p>该例子的复杂度为O(n^3)</p>
-<p>###1.3复杂度量级</p>
-<img src="/2019/12/15/Complexity-Analysis/1.jpg" class="" title="This is an example image">
+        <p>#散列表2</p>
+<p>##1.如何打造一个工业级水平的散列表<br>极客时间-&gt;数据结构与算法之美-&gt;19章节</p>
+<p>##2.为什么散列表和链表经常会一起使用</p>
+<p>###2.1 LRU淘汰缓存算法<br>通过散列表我们可以吧LRu淘汰缓存算法的时间复杂度降低了O(1)。</p>
+<p>LRU淘汰算法，原本在要缓存一个数据时，都会在链表中查询是否有这个数据，如果有则移动到链表尾部。如果没有就直接加在尾部，因为要遍历链表，所以它的时间复杂度时O(n)。</p>
+<p>而且不止添加一个数据，删除或者查找一个数据，时间复杂度也是O(n),但是结合上散列表，便可以将它的时间复杂度降低为O(1)。具体结构如图：  </p>
+<img src="/2020/01/13/HashTable-2/3-1.jpg" class="" title="This is an example image">
 
-<hr>
-<img src="/2019/12/15/Complexity-Analysis/2.jpg" class="" title="This is an example image">
-
-<p>O(logn) 例子折半查找</p>
-<p>O(nlogn) 例子快速排序</p>
-<p>###1.4最坏、最好情况时间复杂度</p>
-<pre><code>// n表示数组array的长度
-int find(int[] array, int n, int x) { 
-    int i = 0; 
-    int pos = -1; 
-    for (; i &lt; n; ++i) { 
-        if (array[i] == x) { 
-            pos = i; 
-            break; 
-        } 
-    } 
-    return pos;
-}</code></pre><p>由以上例子是查找x元素在数组中的下标，如果x在数组中的下标为0，那么时间复杂度就是最好的情况<strong>O(1)</strong>,<br>如果是最后一个那就是最坏的情况<strong>O(n)</strong></p>
-<p>###1.5平均复杂度</p>
-<p>就是计算一个算法执行时间的平均值，把所有可能列出来取平均值</p>
-<img src="/2019/12/15/Complexity-Analysis/3.jpg" class="" title="This is an example image">
-
-<p>数组的0-n-1和不在数组情况</p>
-<p>##2.空间复杂度</p>
-<pre><code>void print(int n) { 
-    int i = 0; 
-    int[] a = new int[n]; 
-    for(i; i&lt;n; i++){
-        a[i] = i;
-    }
-    for (i; i = 0; --i) { 
-        print out a[i] }
-    }
-}</code></pre><p>这里的空间复杂度就为O(n),因为数组a的大小为n</p>
+<p>链表中的每个结点处理存储数据（data）、前驱指针（prev）、后继指针（next）之外，还新增了一个特殊的字段 hnext。其中，hnext指针指向的是在散列表中自己的下一个元素,这样便可以将节点串在散列表的拉链中。</p>
+<p>对于<strong>查找数据</strong>，散列表本身查找数据的时间复杂度便是O(1)。<br>对于<strong>删除数据</strong>，我们要找到删除的节点，因为在散列表中查询时O(1),而且链表是双向链表，可以通过前驱指针来获取前驱节点，所以时间复杂度也是O(1)。因此，删除操作的时间复杂度为O(1)。<br>对于<strong>添加数据</strong>，首先需要查询这个数据是否已经存在，这个查询操作我们可以通过散列表来完成。其他的操作，例如删除头节点、链表尾部插入节点我们都可以在O(1)时间复杂度完成，所以也是十分高效的。</p>
+<p>###2.2 Redis有序集合<br>如果直接使用分值将成员变量组织成跳表，按照键值删除会比较慢，可以在这个的基础上再建一个散列表，这样查询时间复杂度就会是O(1)，删除的时间复杂度也便是O(1)。</p>
+<p>###2.3 Java LinkedHashMap<br>linkedHashMap本身支持LRU淘汰算法。<br>极客时间-&gt;数据结构与算法之美-&gt;20章节</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/15/Complexity-Analysis/" data-id="ck4741f210000rgwi275ub9og" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/HashTable-2/" data-id="ck5clk4ge0004a8wi0i6u3ens" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-HashTable-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/HashTable-1/" class="article-date">
+  <time datetime="2020-01-13T15:19:39.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/HashTable-1/">HashTable-1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#散列表1</p>
+<p>##1.散列思想<br><strong>散列表是利用了数组支持下标随机访问的特性而来，所以散列表其实就是一种数组的扩展。没有数组，就没有散列表</strong><br>例如比赛选手里，选手的标号就是key（键值），我们把它转化成数组的下标，这个转化映射的方法就是散列函数，而通过散列函数映射出来的值就是散列值（hash值）。</p>
+<p>##2.散列函数<br><strong>基本要求</strong><br>a.散列函数计算得到的散列值是一个非负整数；（因为要作为数组下标）<br>b.如果key1=key2，那hash（key1） == hash（key2）<br>c.如果key1≠key2，那么hash（key1）≠ hash（key2）（理论上，鸽巢定理，数组下标有限而数据量大于下标范围那么就会重复）</p>
+<p>##3.散列冲突<br>再好的散列算法也不能避免散列冲突，那我们如何解决这个问题。我们寻常解决的方法有2种，<strong>开放寻址法</strong> 和 <strong>链表法</strong>。</p>
+<p>####3.1开放寻址法<br>当我们往散列表中插入数据时，发现数组该下标的位子已经有数据了，那么就往这个位置往后遍历，直到找到空位为止。如图  </p>
+<img src="/2020/01/13/HashTable-1/2-1.jpg" class="" title="This is an example image">
+
+<p>从图中可以看出，当我们想将x插入散列表时，计算出来的hash值为7，但是数组a[7]已经有数组了，那么只能往后遍历，遍历到数组尾部时就转回头部（利用除余法），知道a[2]才为空，然后就在a[2]插入。（如果一直遍历到7（刚开始的位置）时还未有空数据那么就插入失败）  </p>
+<p>我们如何查找呢？首先我们计算出x的hash值，计算出hash值为7，然后与a[7]进行对比，如果不相等就向后移动一位，一直到7（刚开始的位置）或者空位置时还没有找到，那么就返回没有找到。  </p>
+<p>散列表不仅和数组一样支持查询和插入，还一样支持删除。但是散列表的删除不能直接把数据设置为空，因为这会导致一些数据查询时出错，因为这个位置数据本来不为空的就可以向后遍历，但是删除设置为空后就不会向后遍历，从而导致查询出错。<br>所以我们可以将删除的元素标记为delete（逻辑删除）,遇到delete标记的数据时不是停下来而是继续遍历下去就行了。  </p>
+<img src="/2020/01/13/HashTable-1/2-2.jpg" class="" title="This is an example image">
+
+<p>但是开放寻址法在插入数据越多时，冲突的概率越大，线性探测的时间会越来越久，极端的情况下查询的时间就会退化为O(n)。<br>对于开放寻址法的冲突问题，除了线性探测之外，还有<strong>二次探测</strong> 和 <strong>双重散列</strong>。<br><strong>二次探测</strong>，跟线性探测很像，线性探测的下标时hash(key)+0，hash(key)+1，hash(key)+2，而二次探测是hash(key)+0，hash(key)+1^2,hash(key)+2^2。<br><strong>双重散列</strong>，就是用一组散列函数，如果第一个hash1(key)被占用，就用hash2(key),hash3(key)…直到找到空闲位置为止。</p>
+<p>不管采用什么探测方法，当散列表空闲为止不多的时候，散列冲突的概率就会大大提高。为了尽可能保证散列表的操作效率，一般情况下，我们会尽可能保证散列表中有一定空闲槽位。我们用<strong>装载因子</strong>来表示空位多少。<br>装载因子计算公式： </p>
+<pre><code>散列表的装载因子=填入表中的元素个数/散列表的长度</code></pre><p>####3.2链表法  </p>
+<img src="/2020/01/13/HashTable-1/2-3.jpg" class="" title="This is an example image">
+
+<p>链表法是一种更加常用的散列冲突解决办法，相比开放寻址法，它要简单很多。我们来看这个图，在散列表中，每个“桶（bucket）”或者“槽（slot）”会对应一条链表，所有散列值相同的元素我们都放到相同槽位对应的链表中。  </p>
+<p>当插入的时候，我们只需要通过散列函数计算出对应的散列槽位，将其插入到对应链表中即可，所以插入的时间复杂度是 O(1)。</p>
+<p>查找和删除的时间复杂度和链表长度k成正比，就是O(k)。对于散列比较均匀的散列函数来说，理论上讲，k=n/m，其中 n 表示散列中数据的个数，m 表示散列表中“槽”的个数。</p>
+<p><strong>java中的hashMap底层原理就是利用链表法实现的</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/HashTable-1/" data-id="ck5clk4gb0002a8wi6jl2andz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Hash" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/Hash/" class="article-date">
+  <time datetime="2020-01-13T15:19:12.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/Hash/">Hash</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#哈希算法</p>
+<p>##定义<br>将任意长度的二进制值串映射为固定长度的二进制值串，这个映射的规则就是哈希算法，而通过原始数据映射之后得到的二进制值串就是哈希值。</p>
+<p>##规则<br>从哈希值不能反向推导出原始数据（所以哈希算法也叫单向哈希算法)</p>
+<p>对输入数据非常敏感，哪怕原始数据只修改了一个 Bit，最后得到的哈希值也大不相同  </p>
+<p>散列冲突的概率要很小，对于不同的原始数据，哈希值相同的概率非常小</p>
+<p>哈希算法的执行效率要尽量高效，针对较长的文本，也能快速地计算出哈希值。</p>
+<p>##哈希算法的应用</p>
+<p>###1.安全加密<br>用于加密的哈希算法中，最常用到的就是<strong>MD5</strong>（Message-Digest Algorithm，MD5 消息摘要算法）和<strong>SHA</strong>（Secure Hash Algorithm，安全散列算法）。<br>对于加密的哈希算法来说， <strong>不能反向推导</strong> 和<strong>冲突概率</strong>小这两点特别的重要。第一点就是防止原始数据泄露，但是第二点就只能再理论上实现。为什么在现实中不能实现呢，鸽巢定理诠释了这一点，哈希算法是映射成固定长度的，当有比这长度更多的数据就肯定会重复。10个鸽巢是不可能将11只鸽子都放在不同鸽巢里的。</p>
+<p>###2.唯一标识<br>比如我们要再一个图库中搜索是否存在一张图片，我们不能只用图片名来查询，因为会存在重名情况。<br>所有的文件都是可以转化为二进制数据，但是如果将这些二进制数据直接比较，有的文件很大就会很耗时。所以就需要唯一标识，比如取一个文件的前100个数据和中间100个还有尾部100个数据，然后组合后通过哈希算法映射成哈希值，形成唯一标识，这样搜索速度就会大大加快了。</p>
+<p>###3.数据校验<br>BT下载的原理是基于P2P协议的，我们从多个机器下载一个电影，这个电影可能会被分割成很多块（分成100块举例），等全部下载完再组装起来就行了。但是网络传输往往是不安全的，我们可以通过将这100个文件分别取哈希值，然后保存再种子文件中，因为哈希算法对数据很敏感，改变一点数据哈希值都会不一样,所以当文件下载完以后和种子中保存的哈希值文件对比。如果不同就代表着文件不完整或者被篡改，就需要从其他宿主机器上下载。</p>
+<p>###4.散列函数<br>散列函数是散列表的一个关键，多应用再数据的储存，例如hashMap，hashSet等。散列函数不关心是否能反向解密，他只在乎散列值是否分布均匀。而且散列函数的算法一般是简单的，因为复杂的算法会导致计算很慢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/Hash/" data-id="ck5clk4g90001a8wi05mg3hnn" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SkipList" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/SkipList/" class="article-date">
+  <time datetime="2020-01-13T15:19:03.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/SkipList/">SkipList</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#跳表</p>
+<p>##1.什么是跳表<br>###1.1跳表的时间复杂度<br>对于一个单链表来讲，即便链表中的数据是有序的，我们在其中查找某个数据时，时间复杂度也是O(n),如图  </p>
+<img src="/2020/01/13/SkipList/1-1.jpg" class="" title="This is an example image">
+
+<p>如何提高查找效率，我们可以在原有的链表上建立一级索引，如图</p>
+<img src="/2020/01/13/SkipList/1-2.jpg" class="" title="This is an example image">
+
+<p>其中down指针表示指向下一级节点，例如我们现在要查找16，我们只需要先查找一级索引到13然后向下，再向下一节点遍历只需要7次，而直接遍历表则需要10次。<br>从这个例子来看，我们次数是降低了，虽然减少的次数不多，那也是因为数据量比较小而且只是1级索引。我们再建一层二级索引，如图  </p>
+<img src="/2020/01/13/SkipList/1-3.jpg" class="" title="This is an example image">
+
+<p>这时我们再来查找16那么便只需要6次。<br>我们再来看下64个节点的索引  </p>
+<img src="/2020/01/13/SkipList/1-4.jpg" class="" title="This is an example image">
+
+<p>这回我们可以看到建立了五级索引查找62，只需要遍历11个节点，如果直接遍历那么就需要62个节点，所以建立索引的方法查询的效率是非常高的时间复杂度是O(m*logn),m是指每层索引需要遍历多少个节点，第一个所示的一级跳表和二级跳表都是3个（包含头和尾），所以是3，因为m是个常数所以时间复杂度可以表示为O(logn)。</p>
+<p>###1.2跳表的空间复杂度<br>跳表需要消耗多少空间呢，假如链表长度为n，按每2个节点建立一级索引来看，第一级索引大概就是n/2，第二季是n/4….他是个等比数列，所以索引消耗的空间就是n-2，所以空间复杂度为O(n)。<br>如果我们每3个节点建立一个那就是n/3,n/9,n/27….,总和大约就是n/2。<br>在实际开发中我们不必太在意索引占用的空间，原始链表可能数据很大而索引却比较少，当对象比索引节点大很多时我们基本可以忽略索引节点的空间消耗。</p>
+<p>###1.3高效的动态插入和删除<br>对于单链表，一旦定好插入的位置，那么插入节点的时间复杂度是很低的，为O(1)。<br>而对于跳表而言，插入的时间复杂度为O(logn),因为跳表他需要去保证原始链表的有序性，就需要去查询插入的位置，查询的时间为O(logn)。如图是插入的过程  </p>
+<img src="/2020/01/13/SkipList/1-5.jpg" class="" title="This is an example image">
+
+<p>对于删除操作，如果我们要删除原始链表中的一个节点，而这个节点在索引中，那么对应的索引也需要删除。</p>
+<p>###1.4跳表的动态更新<br>如果我们跳表不更新，就有可能出现某2个索引中间出现很多节点的情况，那样就会退化为单链表。<br>作为一个动态数据结构，我们需要通过某种方法来维护索引与原始链表大小之间的关系，就是如果2个索引中间的节点多了，那么就要相应的增加一些索引。<br>跳表就是采用了随机函数来维护跳表的平衡性。<br>我们通过一个随机函数，来决定将这个结点插入到哪几级索引中，比如随机函数生成了值 K，那我们就将这个结点添加到第一级到第 K 级这 K 级索引中。  </p>
+<img src="/2020/01/13/SkipList/1-6.jpg" class="" title="This is an example image">
+
+<p>随机函数的选择很有讲究，从概率上来讲，能够保证跳表的索引大小和数据大小平衡性，不至于性能过度退化。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/SkipList/" data-id="ck5clk4gm0007a8wiaqz62hrk" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-halfFind" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/halfFind/" class="article-date">
+  <time datetime="2020-01-13T15:17:49.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/halfFind/">halfFind</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#二分查找</p>
+<p>##1.二分查找无处不在<br>二分查找法也叫折半查找法，二分查找法是一个简单易懂的快速查找法，举个例子，对于1024个数据中找出一个准确的数字，只需要10次，对于再大的数据他的查找次数也只会是log2（N），所以时间复杂度是O(logn),而对数函数曲线我们也是了解的。<br>但是对于二分查找法运用上的缺陷，那就是他只能运用在已排序好的数组了,其次数据量太小也不适合用二分查找法。</p>
+<p>##2.二分查找的实现<br>最简单的就是有序数组中不存在重复元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) {
+    int low = 0;
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = (low + high) / 2; 
+        if (a[mid] == value) { 
+            return mid; 
+        } 
+        else if (a[mid] &lt; value) {
+            low = mid + 1; 
+        } 
+        else { 
+            high = mid - 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>###2.1容易出错的 3 个地方。</p>
+<p>####2.1.1 循环退出条件<br>注意是 low&lt;=high，而不是 low&gt;1)。<br>####2.1.2 mid 的取值<br>实际上，mid=(low+high)/2 这种写法是有问题的。因为如果 low 和 high 比较大的话，两者之和就有可能会溢出。改进的方法是将 mid 的计算方式写成 low+(high-low)/2。更进一步，如果要将性能优化到极致的话，我们可以将这里的除以 2 操作转化成位运算 low+((high-low)&gt;&gt;1)。因为相比除法运算来说，计算机处理位运算要快得多。<br>####2.1.3 low 和 high 的更新<br>low=mid+1，high=mid-1。注意这里的 +1 和 -1，如果直接写成 low=mid 或者 high=mid，就可能会发生死循环。比如，当 high=3，low=3 时，如果 a[3] 不等于 value，就会导致一直循环不退出。</p>
+<p>##3.二分查找变形</p>
+<p>####3.1查找第一个值等于给定值的元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt; value) { 
+            high = mid - 1; 
+        } 
+        else if (a[mid] &lt; value) { 
+            low = mid + 1; 
+        } 
+        else { 
+            if ((mid == 0) || (a[mid - 1] != value))     
+                return mid; 
+            else 
+                high = mid - 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>####3.2查找最后一个值等于给定值的元素<br>和上面代码差不多</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt; value) { 
+            high = mid - 1; 
+        } 
+        else if (a[mid] &lt; value) { 
+            low = mid + 1; 
+        } 
+        else { 
+            if ((mid == n - 1) || (a[mid + 1] != value)) 
+                return mid; 
+            else 
+                low = mid + 1; 
+        } 
+    } 
+    return -1;
+}</code></pre><p>####3.3查找第一个大于等于给定值的元素</p>
+<pre><code>public int bsearch(int[] a, int n, int value) { 
+    int low = 0; 
+    int high = n - 1; 
+    while (low &lt;= high) { 
+        int mid = low + ((high - low) &gt;&gt; 1); 
+        if (a[mid] &gt;= value) { 
+            if ((mid == 0) || (a[mid - 1] &lt; value))
+                return mid; 
+            else 
+                high = mid - 1; 
+        } 
+        else { 
+            low = mid + 1; 
+        } 
+    } 
+    return -1;
+}</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/halfFind/" data-id="ck5clk4gg0006a8wia2dwe7en" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-sort-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/sort-3/" class="article-date">
+  <time datetime="2020-01-13T15:13:50.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/sort-3/">sort-3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#排序3 线性排序</p>
+<p>##1.桶排序</p>
+<p>####1.1什么是桶排序<br>桶排序，故名思意就是要用到桶，核心的思想就是将数据放到几个有序的桶里，然后再每个桶里进行排序，如图  </p>
+<img src="/2020/01/13/sort-3/3-1.jpg" class="" title="This is an example image">
+<p>然后每个桶里的数据都排序完了以后，再按桶的次序依次取出，排序就完成了。</p>
+<p>####1.2桶排序的时间复杂度<br>桶排序的时间复杂度是<strong>O(n)</strong>。因为每个数据分到每个桶里，数据在每个桶里依然还是需要排序，所以就是O(n)。<br>举个例子：<br>有n个数据，分到m个桶里，那么理想一点，每个桶里的数据都是k=n/m个数据。每个桶里使用快速排序，时间复杂度就是O(klogk)，m个桶就是<br>O(m*klogk)，所以时间复杂度就是(nlog(n/m)),当桶的个数m接近n的时候，那时间复杂度就接近O(n)了。</p>
+<p>####1.3为什么桶排序不能代替之前的其他排序<br>因为桶排序的要求十分的苛刻，就是桶的个数要十分接近n的个数，如果所有数据都放在一个桶里，那他就会退化为O(nlogn)了。<br><strong>桶排序比较适合用在外部排序</strong>。所谓的外部排序，就是在数据放在外部磁盘中然后排序。有时候数据量比较大，内存放不下的时候，就无法放在内存中了。</p>
+<p>####1.4例题：<br>比如说我们有 10GB 的订单数据，我们希望按订单金额（假设金额都是正整数）进行排序，但是我们的内存有限，只有几百 MB，没办法一次性把 10GB 的数据都加载到内存中。这个时候该怎么办呢？</p>
+<p>我们可以先扫描一遍文件，然后大致的了解下金额的范围，接着根据金额分额进行划分。例如我们扫到了1-10W的范围，那么我们可以分为100个桶，第一个桶1-1000，第二个桶1001-2000….这样划分，然后进行编号: 00,01,02… 。<br>然后假设每个桶的数据均匀，那么每个桶的数据大小就是102.4mb，我们再依次的进行快速排序，然后依次按编号读取数据到文件中，就可以完成排序了。<br>当然数据不可能均匀划分的，我们可以再发现一个桶中数据太大装不下的时候可以再对它进行划分，知道所有文件都能读入内存为止。</p>
+<p>##2.计数排序</p>
+<p>####2.1什么是计数排序<br>计数排序在我看来是属于桶排序的特殊情况，那就是当数据量远远大于数据的范围时，或者说要排序数据的范围不大时可以采用计数排序，例如中考、高考的排名就是利用了计数排序</p>
+<p>####2.2计数排序如何排序的<br>比如高考的考生有几十万人数，而分数只有810分，那么我们就可以创建一个数组x，大小为811，然后没查到一个分数，对应的为止就+1，这样子我么就能知道多少分对应多少名么。<br>如何找到数组中对应的位置呢，我们可以对上面记录好的数组进行顺序求和，就是哪个为止对应这个分数以前有多少人，c[3]遍是将x[0]+x[1]+x[2]+x[3]。然后我们从后往前扫描，当我们扫描到分数为3的人时，就将他放在c[3]值的位置，然后c[3]–。</p>
+<p><strong>PS:</strong> 计数排序只能给非负整数数数据进行排序，如果要对其他数据排序，需要在不改变其相对大小的情况下转化为整数。例如只有一个小数点的数据，我们可以将里面的数据都乘10再进行计数排序</p>
+<p>##3.基数排序</p>
+<p>####例题:我们再来看这样一个排序问题。假设我们有 10 万个手机号码，希望将这 10 万个手机号码从小到大排序，你有什么比较快速的排序方法呢？<br>快排的时间复杂度可以到达O(nlogn)。对桶排序和计数排序而言，手机号码是11位，范围太大，所以不适用。这时候就有一种新的排序，<strong>基数排序</strong>。<br>先按照最后一位来排序手机号码，然后，再按照倒数第二位重新排序，以此类推，最后按照第一位重新排序。经过 11 次排序之后，手机号码就都有序了。</p>
+<img src="/2020/01/13/sort-3/3-2.jpg" class="" title="This is an example image">
+
+<p>注意，这里按照每位来排序的排序算法要是稳定的，否则这个实现思路就是不正确的。因为如果是非稳定排序算法，那最后一次排序只会考虑最高位的大小顺序，完全不管其他位的大小关系，那么低位的排序就完全没有意义了。<br>如果数据的长度不同，那么位数不够的可以在后面补0，根据ASCII值可以知道所有的字母都大于0。</p>
+<p>##4.如何实现一个通用的额、高性能的排序函数<br>极客时间-&gt;数据结构与算法之美-&gt;14章节</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/sort-3/" data-id="ck5clk4go0009a8wih7ih5rbt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-sort-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/sort-2/" class="article-date">
+  <time datetime="2020-01-13T15:13:43.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/sort-2/">sort-2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#排序2</p>
+<p>##1.归并排序</p>
+<p>###1.1归并排序的原理<br>将一个待排序的数组分为2部分，然后递归一直分解直到最后2个元素时才进行排序，然后递归返回，接着合并返回回来的2个排列好的前后2个数组，下面是分解图  </p>
+<img src="/2020/01/13/sort-2/1.jpg" class="" title="This is an example image">
+
+<p>归并排序使用的就是<strong>分治思想</strong>，分治思想一般都是用递归来解决的。<br><strong>分治是一种解决问题的处理方式，而递归是一种编程技巧。</strong></p>
+<p>###1.2归并排序的性能分析<br>####a.归并排序是排序稳定算法么<br>归并排序是稳定的排序算法，因为如果2个数相等那么他们在排序的时候的前后顺序是不会改变的<br>####b.归并排序的时间复杂度是多少</p>
+<p>O(nlogn)<br>计算公式(copy的)</p>
+<pre><code>T(1) = C； n=1时，
+只需要常量级的执行时间，所以表示为C。
+T(n) = 2*T(n/2) + n； n&gt;1
+
+T(n) = 2*T(n/2) + n 
+     = 2*(2*T(n/4) + n/2) + n 
+     = 4*T(n/4) + 2*n 
+     = 4*(2*T(n/8) + n/4) + 2*n 
+     = 8*T(n/8) + 3*n 
+     = 8*(2*T(n/16) + n/8) + 3*n 
+     = 16*T(n/16) + 4*n 
+     ...... 
+     = 2^k * T(n/2^k) + k * n 
+     ......</code></pre><p>我们可以得到 T(n) = 2^kT(n/2^k)+kn。当 T(n/2^k)=T(1) 时，也就是 n/2^k=1，我们得到 k=log2n。我们将 k 值代入上面的公式，得到 T(n)=Cn+nlog2n 。如果我们用大 O 标记法来表示的话，T(n) 就等于 O(nlogn)。所以归并排序的时间复杂度是 O(nlogn)。</p>
+<p>####c.归并排序的空间复杂度是多少</p>
+<p>O(n),所以归并排序不是原地排序.<br>为什么不是O(nlogn)，因为计算空间复杂度不能和时间复杂度一样，递归中创建的数组属于临时的所以合并完成后就会释放掉，因此时O(n)</p>
+<p>##2.快速排序</p>
+<p>快速排序就是以数组中的数为基准，然后将这个数大的放在他的右边，其余的放在它的左边，递归这样排序。</p>
+<p>###2.2快速排序的性能分析<br>####a.时间复杂度<br>O(nlogn)</p>
+<p>####b.空间复杂度<br>O(1),快速排序有一种很特殊的处理方法，前后指针来操作，是原地排序。<br>(代码就不贴了，在自己电脑上)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/sort-2/" data-id="ck5clk4gf0005a8wibtku5ndt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-sort-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/sort-1/" class="article-date">
+  <time datetime="2020-01-13T15:13:33.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/sort-1/">sort-1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#排序1</p>
+<p>##1.如何分析一个“排序算法”</p>
+<p>###1.1 最好情况、最坏情况、平均情况时间复杂度<br>就是我们在分析一个排序算法的复杂度的时候，我们要列出他们这三个复杂度，并且还要列出他们出现的时候的原始数据的排序状态。</p>
+<p>###1.2复杂度的系数、常数、低阶<br>因为在我们实际的开发中，我们排序的目标可能是10个、100个、1000个这样的小规模数据，所以要把他们也考虑进来。</p>
+<p>###1.3比较次数和交换次数<br>适用于比较的排序算法。</p>
+<p>##2.排序的内存消耗<br>内存消耗我们可以通过空间复杂度来计算，所以有一个新概念叫<strong>原地排序</strong>，就是值<strong>空间复杂度为O(1)</strong>的排序算法。</p>
+<p>##3.排序算法的稳定性<br>排序完成前和完成后，待排序的列序中相等的元素的前后关系是不是一致的，就比如<strong>[1，4，2(前)，2，3]</strong>,排序后为<strong>[1，2(前)，2，3，4]</strong>,就叫做稳定的排序。如果排序后为 <strong>[1,2,2(前),3,4]</strong>那就是不稳定排序了。<br>冒泡排序就是<strong>稳定排序</strong>，选择排序就是 <strong>不稳定排序</strong>。</p>
+<p>##4.逆序度和有序度</p>
+<p><strong>逆序度</strong> 就是这个数组中一共有多少个<strong>逆序对</strong>， <strong>有序度</strong>就是这个数组中有多少个 <strong>有序对</strong>  。<br>当以个数组成正序排列时，例如[1,2,3,4,5],那么他的有序度是满的，就叫做<strong>满有序度</strong>  。<br>关于这三个概念，就可以得到一个公式<strong>逆序度=满有序度-有序度</strong>。</p>
+<p>##5.为什么插入排序比冒泡排序更受欢迎</p>
+<p>因为冒泡排序无论怎么优化，元素的交换个数都是个固定值，是原始数据的<strong>逆序度</strong>。虽然插入排序也是一样的，但是从代码上来看，冒泡排序比插入排序复杂，因为冒泡排序需要3个赋值操作，而插入排序只有一个赋值操作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/sort-1/" data-id="ck5clk4gn0008a8wi96h10wdh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-栈+队列问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/" class="article-date">
+  <time datetime="2020-01-13T15:12:55.590Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/">栈+队列问题</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#栈和队列的相关问题</p>
+<p>###1.我们在讲栈的应用时，讲到用函数调用栈来保存临时变量，为什么函数调用要用“栈”来保存临时变量呢？用其他数据结构不行吗？<br>其实，我们不一定非要用栈来保存临时变量，只不过如果这个函数调用符合后进先出的特性，用栈这种数据结构来实现，是最顺理成章的选择。 </p>
+<p>从调用函数进入被调用函数，对于数据来说，变化的是什么呢？是作用域。所以根本上，只要能保证每进入一个新的函数，都是一个新的作用域就可以。而要实现这个，用栈就非常方便。在进入被调用函数的时候，分配一段栈空间给这个函数的变量，在函数结束的时候，将栈顶复位，正好回到调用函数的作用域内。</p>
+<p>###2.我们都知道，JVM 内存管理中有个“堆栈”的概念。栈内存用来存储局部变量和方法调用，堆内存用来存储 Java 中的对象。那 JVM 里面的“栈”跟我们这里说的“栈”是不是一回事呢？如果不是，那它为什么又叫作“栈”呢？<br>内存中的堆栈和数据结构堆栈不是一个概念，可以说内存中的堆栈是真实存在的物理区，数据结构中的堆栈是抽象的数据存储结构。</p>
+<p>内存空间在逻辑上分为三部分：代码区、静态数据区和动态数据区，动态数据区又分为栈区和堆区。</p>
+<p>代码区：存储方法体的二进制代码。高级调度（作业调度）、中级调度（内存调度）、低级调度（进程调度）控制代码区执行代码的切换。</p>
+<p>静态数据区：存储全局变量、静态变量、常量，常量包括final修饰的常量和String常量。系统自动分配和回收。</p>
+<p>栈区：存储运行方法的形参、局部变量、返回值。由系统自动分配和回收。</p>
+<p>堆区：new一个对象的引用或地址存储在栈区，指向该对象存储在堆区中的真实数据</p>
+<p>###3.除了线程池这种池结构会用到队列排队请求，你还知道有哪些类似的池结构或者场景中会用到队列的排队请求呢？</p>
+<p>分布式消息队列,如<strong>kafka</strong></p>
+<p>###4.并发队列中，关于如何实现无锁并发队列，网上有非常多的讨论。对这个问题，你怎么看呢？</p>
+<p>CAS+数组</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/" data-id="ck5clk4gp000aa8wi9cz576yv" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linked-List" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/Linked-List/" class="article-date">
+  <time datetime="2020-01-13T15:11:02.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/13/Linked-List/">Linked-List</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#2.链表</p>
+<p>##数组和链表</p>
+<p>链表对于随机插入删除的时间复杂度是O(1),数组是O(n)</p>
+<p>链表对于随机查询的时间复杂度是o(n),数组是O(1)</p>
+<p>链表<strong>不需要申请一块连续的内存</strong>，而数组<strong>需要申请一块连续的内存</strong> ，但是链表需要额外的空间储存指针，所以对于特定的一些情况来说就是属于<strong>空间换时间</strong>的概念</p>
+<p>如果代码对于内存要求苛刻，那么数组就比链表更适合。因为链表需要额外的空间储存指针，所以内存会翻倍，而且对链表的频繁做掺入、删除的操作会导致<strong>频繁的内存申请和释放</strong> ，如果是java语言，就会导致频繁的GC(垃圾回收)</p>
+<p>##2.LRU缓存淘汰算法</p>
+<p>###2.1缓存</p>
+<p>缓存是一种提高数据读取性能的技术，在硬件设计和软件开发中都有着十分广泛的应用，比如常见的CPU缓存、数据库缓存、浏览器缓存等等。</p>
+<p>常见的三种策略：FIFO先进先出（First In First Out）、LFU最少使用策略(Least Frequently Used)、最近最少使用策略LRU(Least Recently Used)。</p>
+<p>##3.使用哨兵来简化链表实现的难度</p>
+<p>如果我们想要往后node加一个节点，那么代码很简单</p>
+<pre><code>p-&gt;next = node-&gt;next;
+node-&gt;next = p;</code></pre><p>但是如果往头节点插入一个节点那么逻辑就不太一样了</p>
+<pre><code>if(head == null){
+    head = p;
+}
+else{
+    p-&gt;next = head;
+    head = p;
+}</code></pre><p>删除的时候我们也是一样要做页数处理，</p>
+<pre><code>if(head-&gt;next == null){
+    head = null;
+}</code></pre><p>接下来我们就要引入哨兵这个节点，使head指针一直指向这个哨兵节点,<br>哨兵节点value值为null，指针指向头节点,我们也把带有哨兵节点的链表叫做<strong>带头链表</strong></p>
+<img src="/2020/01/13/Linked-List/1.jpg" class="" title="This is an example image">
+
+<p>实际上，这种利用哨兵简化编程难度的技巧，在很多代码实现中都有用到，比如插入排序、归并排序、动态规划等.</p>
+<p>##4.链表单表反转实现(自己想的)</p>
+<p>定义一个function(pre,node),其中node为当前节点，pre为shang一节点,代码</p>
+<pre><code>function(pre,node){
+    if(node-&gt;next != null){
+        fun(node,node-&gt;next);
+    }
+    node-&gt;next = pre;
+}</code></pre><p>调用时就将null为pre，head为node传入，代码</p>
+<pre><code>function(null,head);</code></pre><p>##判断链表是否有环，如果有求环节点</p>
+<p>如何判断有环，我们可以定义一个faster节点和一个slower节点，faster一次走2步，即faster = faster-&gt;next-&gt;next。slower走一步，即slower = slower-&gt;next。如果有环应为速度不一样所以迟早会相遇。</p>
+<p>代码</p>
+<pre><code>ListNode judgeCycle(ListNode head)
+{
+    if(head == null)
+        return null;
+    ListNode faster=head;
+    ListNode slower=head;
+    boolean flag = false;
+    while(faster.next != null &amp;&amp; faster.next.next != null)
+    {
+        faster = faster.next.next;
+        slower = slower.next;
+        if (faster == slower) {
+            flag = true;
+               return ture;
+        }
+    }
+    return false;
+}</code></pre><p>如何求换节点，首先如图</p>
+<img src="/2020/01/13/Linked-List/2.jpg" class="" title="This is an example image">
+
+
+<p><strong>推理</strong></p>
+<p>设环的长度为c(即m+l）,<br>fast走的路程:s+cround1+m<br>low走的路程:s+cround2+m;<br>fast路程是low路程的两倍，所以得出<br>s=c(2round1-round2)-m<br>=c(2round1-round2-1)+c-m<br>=c(2round1-round2-1)+I</p>
+<p><strong>我们由此得到了结论</strong><br>起点到环入口点s和相遇点到环路口点I的等式关系。<br>这个等式关系就充分说明了当指针low链表头开始，指针fast从相遇点开始，同时以一个步长往下走，必然会在第一个公共点相遇，当然，式子告诉我们可能fast先绕着环转个几圈再和low相遇。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/Linked-List/" data-id="ck5clk4gd0003a8wi7va01aux" class="article-share-link">Share</a>
       
       
     </footer>
@@ -189,6 +703,11 @@ int find(int[] array, int n, int x) {
 
   
 
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+  </nav>
 
 </section>
         
@@ -206,7 +725,7 @@ int find(int[] array, int n, int x) {
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
     </div>
   </div>
 
@@ -219,7 +738,23 @@ int find(int[] array, int n, int x) {
       <ul>
         
           <li>
-            <a href="/2019/12/15/Complexity-Analysis/">Complexity-Analysis</a>
+            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Hash/">Hash</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/SkipList/">SkipList</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/halfFind/">halfFind</a>
           </li>
         
       </ul>
@@ -234,7 +769,7 @@ int find(int[] array, int n, int x) {
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2019 John Doe<br>
+      &copy; 2020 John Doe<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>sort-3 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#排序3 线性排序 ##1.桶排序 ####1.1什么是桶排序桶排序，故名思意就是要用到桶，核心的思想就是将数据放到几个有序的桶里，然后再每个桶里进行排序，如图    然后每个桶里的数据都排序完了以后，再按桶的次序依次取出，排序就完成了。 ####1.2桶排序的时间复杂度桶排序的时间复杂度是O(n)。因为每个数据分到每个桶里，数据在每个桶里依然还是需要排序，所以就是O(n)。举个例子：有n个数据，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sort-3">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;sort-3&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#排序3 线性排序 ##1.桶排序 ####1.1什么是桶排序桶排序，故名思意就是要用到桶，核心的思想就是将数据放到几个有序的桶里，然后再每个桶里进行排序，如图    然后每个桶里的数据都排序完了以后，再按桶的次序依次取出，排序就完成了。 ####1.2桶排序的时间复杂度桶排序的时间复杂度是O(n)。因为每个数据分到每个桶里，数据在每个桶里依然还是需要排序，所以就是O(n)。举个例子：有n个数据，">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;sort-3&#x2F;3-1.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;sort-3&#x2F;3-2.jpg">
+<meta property="article:published_time" content="2020-01-13T15:13:50.000Z">
+<meta property="article:modified_time" content="2020-01-13T15:16:04.236Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;sort-3&#x2F;3-1.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-sort-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/sort-3/" class="article-date">
+  <time datetime="2020-01-13T15:13:50.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      sort-3
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#排序3 线性排序</p>
+<p>##1.桶排序</p>
+<p>####1.1什么是桶排序<br>桶排序，故名思意就是要用到桶，核心的思想就是将数据放到几个有序的桶里，然后再每个桶里进行排序，如图  </p>
+<img src="/2020/01/13/sort-3/3-1.jpg" class="" title="This is an example image">
+<p>然后每个桶里的数据都排序完了以后，再按桶的次序依次取出，排序就完成了。</p>
+<p>####1.2桶排序的时间复杂度<br>桶排序的时间复杂度是<strong>O(n)</strong>。因为每个数据分到每个桶里，数据在每个桶里依然还是需要排序，所以就是O(n)。<br>举个例子：<br>有n个数据，分到m个桶里，那么理想一点，每个桶里的数据都是k=n/m个数据。每个桶里使用快速排序，时间复杂度就是O(klogk)，m个桶就是<br>O(m*klogk)，所以时间复杂度就是(nlog(n/m)),当桶的个数m接近n的时候，那时间复杂度就接近O(n)了。</p>
+<p>####1.3为什么桶排序不能代替之前的其他排序<br>因为桶排序的要求十分的苛刻，就是桶的个数要十分接近n的个数，如果所有数据都放在一个桶里，那他就会退化为O(nlogn)了。<br><strong>桶排序比较适合用在外部排序</strong>。所谓的外部排序，就是在数据放在外部磁盘中然后排序。有时候数据量比较大，内存放不下的时候，就无法放在内存中了。</p>
+<p>####1.4例题：<br>比如说我们有 10GB 的订单数据，我们希望按订单金额（假设金额都是正整数）进行排序，但是我们的内存有限，只有几百 MB，没办法一次性把 10GB 的数据都加载到内存中。这个时候该怎么办呢？</p>
+<p>我们可以先扫描一遍文件，然后大致的了解下金额的范围，接着根据金额分额进行划分。例如我们扫到了1-10W的范围，那么我们可以分为100个桶，第一个桶1-1000，第二个桶1001-2000….这样划分，然后进行编号: 00,01,02… 。<br>然后假设每个桶的数据均匀，那么每个桶的数据大小就是102.4mb，我们再依次的进行快速排序，然后依次按编号读取数据到文件中，就可以完成排序了。<br>当然数据不可能均匀划分的，我们可以再发现一个桶中数据太大装不下的时候可以再对它进行划分，知道所有文件都能读入内存为止。</p>
+<p>##2.计数排序</p>
+<p>####2.1什么是计数排序<br>计数排序在我看来是属于桶排序的特殊情况，那就是当数据量远远大于数据的范围时，或者说要排序数据的范围不大时可以采用计数排序，例如中考、高考的排名就是利用了计数排序</p>
+<p>####2.2计数排序如何排序的<br>比如高考的考生有几十万人数，而分数只有810分，那么我们就可以创建一个数组x，大小为811，然后没查到一个分数，对应的为止就+1，这样子我么就能知道多少分对应多少名么。<br>如何找到数组中对应的位置呢，我们可以对上面记录好的数组进行顺序求和，就是哪个为止对应这个分数以前有多少人，c[3]遍是将x[0]+x[1]+x[2]+x[3]。然后我们从后往前扫描，当我们扫描到分数为3的人时，就将他放在c[3]值的位置，然后c[3]–。</p>
+<p><strong>PS:</strong> 计数排序只能给非负整数数数据进行排序，如果要对其他数据排序，需要在不改变其相对大小的情况下转化为整数。例如只有一个小数点的数据，我们可以将里面的数据都乘10再进行计数排序</p>
+<p>##3.基数排序</p>
+<p>####例题:我们再来看这样一个排序问题。假设我们有 10 万个手机号码，希望将这 10 万个手机号码从小到大排序，你有什么比较快速的排序方法呢？<br>快排的时间复杂度可以到达O(nlogn)。对桶排序和计数排序而言，手机号码是11位，范围太大，所以不适用。这时候就有一种新的排序，<strong>基数排序</strong>。<br>先按照最后一位来排序手机号码，然后，再按照倒数第二位重新排序，以此类推，最后按照第一位重新排序。经过 11 次排序之后，手机号码就都有序了。</p>
+<img src="/2020/01/13/sort-3/3-2.jpg" class="" title="This is an example image">
+
+<p>注意，这里按照每位来排序的排序算法要是稳定的，否则这个实现思路就是不正确的。因为如果是非稳定排序算法，那最后一次排序只会考虑最高位的大小顺序，完全不管其他位的大小关系，那么低位的排序就完全没有意义了。<br>如果数据的长度不同，那么位数不够的可以在后面补0，根据ASCII值可以知道所有的字母都大于0。</p>
+<p>##4.如何实现一个通用的额、高性能的排序函数<br>极客时间-&gt;数据结构与算法之美-&gt;14章节</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/sort-3/" data-id="ck5clk4go0009a8wih7ih5rbt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/01/13/halfFind/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          halfFind
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/01/13/sort-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">sort-2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Hash/">Hash</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/SkipList/">SkipList</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/halfFind/">halfFind</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hash | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#哈希算法 ##定义将任意长度的二进制值串映射为固定长度的二进制值串，这个映射的规则就是哈希算法，而通过原始数据映射之后得到的二进制值串就是哈希值。 ##规则从哈希值不能反向推导出原始数据（所以哈希算法也叫单向哈希算法) 对输入数据非常敏感，哪怕原始数据只修改了一个 Bit，最后得到的哈希值也大不相同   散列冲突的概率要很小，对于不同的原始数据，哈希值相同的概率非常小 哈希算法的执行效率要尽量高">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hash">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;13&#x2F;Hash&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#哈希算法 ##定义将任意长度的二进制值串映射为固定长度的二进制值串，这个映射的规则就是哈希算法，而通过原始数据映射之后得到的二进制值串就是哈希值。 ##规则从哈希值不能反向推导出原始数据（所以哈希算法也叫单向哈希算法) 对输入数据非常敏感，哪怕原始数据只修改了一个 Bit，最后得到的哈希值也大不相同   散列冲突的概率要很小，对于不同的原始数据，哈希值相同的概率非常小 哈希算法的执行效率要尽量高">
+<meta property="article:published_time" content="2020-01-13T15:19:12.000Z">
+<meta property="article:modified_time" content="2020-01-13T15:20:09.965Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Hash" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/13/Hash/" class="article-date">
+  <time datetime="2020-01-13T15:19:12.000Z" itemprop="datePublished">2020-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Hash
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#哈希算法</p>
+<p>##定义<br>将任意长度的二进制值串映射为固定长度的二进制值串，这个映射的规则就是哈希算法，而通过原始数据映射之后得到的二进制值串就是哈希值。</p>
+<p>##规则<br>从哈希值不能反向推导出原始数据（所以哈希算法也叫单向哈希算法)</p>
+<p>对输入数据非常敏感，哪怕原始数据只修改了一个 Bit，最后得到的哈希值也大不相同  </p>
+<p>散列冲突的概率要很小，对于不同的原始数据，哈希值相同的概率非常小</p>
+<p>哈希算法的执行效率要尽量高效，针对较长的文本，也能快速地计算出哈希值。</p>
+<p>##哈希算法的应用</p>
+<p>###1.安全加密<br>用于加密的哈希算法中，最常用到的就是<strong>MD5</strong>（Message-Digest Algorithm，MD5 消息摘要算法）和<strong>SHA</strong>（Secure Hash Algorithm，安全散列算法）。<br>对于加密的哈希算法来说， <strong>不能反向推导</strong> 和<strong>冲突概率</strong>小这两点特别的重要。第一点就是防止原始数据泄露，但是第二点就只能再理论上实现。为什么在现实中不能实现呢，鸽巢定理诠释了这一点，哈希算法是映射成固定长度的，当有比这长度更多的数据就肯定会重复。10个鸽巢是不可能将11只鸽子都放在不同鸽巢里的。</p>
+<p>###2.唯一标识<br>比如我们要再一个图库中搜索是否存在一张图片，我们不能只用图片名来查询，因为会存在重名情况。<br>所有的文件都是可以转化为二进制数据，但是如果将这些二进制数据直接比较，有的文件很大就会很耗时。所以就需要唯一标识，比如取一个文件的前100个数据和中间100个还有尾部100个数据，然后组合后通过哈希算法映射成哈希值，形成唯一标识，这样搜索速度就会大大加快了。</p>
+<p>###3.数据校验<br>BT下载的原理是基于P2P协议的，我们从多个机器下载一个电影，这个电影可能会被分割成很多块（分成100块举例），等全部下载完再组装起来就行了。但是网络传输往往是不安全的，我们可以通过将这100个文件分别取哈希值，然后保存再种子文件中，因为哈希算法对数据很敏感，改变一点数据哈希值都会不一样,所以当文件下载完以后和种子中保存的哈希值文件对比。如果不同就代表着文件不完整或者被篡改，就需要从其他宿主机器上下载。</p>
+<p>###4.散列函数<br>散列函数是散列表的一个关键，多应用再数据的储存，例如hashMap，hashSet等。散列函数不关心是否能反向解密，他只在乎散列值是否分布均匀。而且散列函数的算法一般是简单的，因为复杂的算法会导致计算很慢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/13/Hash/" data-id="ck5clk4g90001a8wi05mg3hnn" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/01/13/HashTable-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          HashTable-1
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/01/13/SkipList/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SkipList</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Hash/">Hash</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/SkipList/">SkipList</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/halfFind/">halfFind</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
