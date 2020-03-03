@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>OOP2 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#面向对象2编程范式一共有三种，面向对象编程，面向过程编程，函数式编程 ##1.什么是面向过程编程和面向过程编程语言 面向过程编程是一种编程范式，不过他是以过程为基本单元(方法、函数、操作这些)，将数据和方法分离作为主要特点，是一种流程化的编程风格。 面向过程编程语言的特点就是不支持类和对象两个语法概念(例如C),不支持面向对象编程特性，仅支持面向过程编程。 public class User {">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OOP2">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;03&#x2F;OOP2&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#面向对象2编程范式一共有三种，面向对象编程，面向过程编程，函数式编程 ##1.什么是面向过程编程和面向过程编程语言 面向过程编程是一种编程范式，不过他是以过程为基本单元(方法、函数、操作这些)，将数据和方法分离作为主要特点，是一种流程化的编程风格。 面向过程编程语言的特点就是不支持类和对象两个语法概念(例如C),不支持面向对象编程特性，仅支持面向过程编程。 public class User {">
+<meta property="article:published_time" content="2020-03-03T02:03:42.000Z">
+<meta property="article:modified_time" content="2020-03-03T02:04:04.258Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-OOP2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP2/" class="article-date">
+  <time datetime="2020-03-03T02:03:42.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      OOP2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象2<br><strong>编程范式一共有三种，面向对象编程，面向过程编程，函数式编程</strong></p>
+<p>##1.什么是面向过程编程和面向过程编程语言</p>
+<p>面向过程编程是一种编程范式，不过他是以过程为基本单元(方法、函数、操作这些)，将数据和方法分离作为主要特点，是一种流程化的编程风格。</p>
+<p>面向过程编程语言的特点就是不支持类和对象两个语法概念(例如C),不支持面向对象编程特性，仅支持面向过程编程。</p>
+<pre><code>public class User { 
+    private String name; 
+    private int age; 
+    private String gender; 
+    public User(String name, int age, String gender) { 
+        this.name = name; 
+        this.age = age; 
+        this.gender = gender; 
+    } 
+    public static User praseFrom(String userInfoText) {
+        // 将text(“小王&amp;28&amp;男”)解析成类User 
+    } 
+    public String formatToText() { 
+        // 将类User格式化成文本（&quot;小王\t28\t男&quot;） 
+    }
+}
+
+public class UserFileFormatter { 
+    public void format(String userFile, String formattedUserFile) { 
+        // Open files... 
+        List users = new ArrayList&lt;&gt;(); 
+        while (1) { 
+            // read until file is empty 
+            // read from file into userText... 
+            User user = User.parseFrom(userText);
+            users.add(user); 
+        } 
+        // sort users by age... 
+        for (int i = 0; i &lt; users.size(); ++i) { 
+            String formattedUserText = user.formatToText(); 
+            // write to new file... 
+        } 
+        // close files... 
+    }
+}
+public class MainApplication { 
+    public static void main(Sring[] args) { 
+        UserFileFormatter userFileFormatter = new UserFileFormatter(); 
+        userFileFormatter.format(&quot;/home/zheng/users.txt&quot;, &quot;/home/zheng/formatted_users.txt&quot;); 
+    }
+}</code></pre><p>以上就是一种面向过程编程的代码。</p>
+<p>##2.面向对象编程语言相比面向过程编程语言的优势</p>
+<p>####2.1 OOP更适合进行大规模复杂程序的开发<br>大规模复杂程序的处理流程错综复杂，而且并非只有一条主线，流程图画出来的话会是一个网状图。<br>面向过程编程像是一种应负式的编程方式，代码复用率很低，所以如果开发大规模复杂程序会很麻烦并且难以维护。<br>如果我们使用面向对象编程方式，我们一开始会是去思考如何设计这些类，而不是去将流程拆解，设计完类后再去组合拼装，来形成整个程序。如果将类比喻成积木，那么我们要做的就是将需要的积木组件做出来，然后再去搭建大厦，而不是直接做一个无法拆解的大厦出来。</p>
+<p>####2.2 OOP代码更易扩展、易维护、易复用<br>因为面向对象编程有四大特性，<strong>封装、继承、多态、抽象</strong>。<br><strong>封装</strong>防止数据会像面向过程编程一样会被任意方法修改，所以提高了代码的易维护性。<br><strong>抽像</strong>，函数本身就是一种抽象。但是面向对象编程还提供了其他方式的抽象，比如基于接口的抽像，我们可以再不改变原有实现的情况下，轻松替换现有的逻辑，提高代码的可扩展性。<br><strong>继承</strong>，多个类中如果我们发现有可公用的属性或者方法，就可以抽提出一个父类，让他们继承，这样可以提高代码的复用性。<br><strong>多态</strong>，在子类中也可以重写原来的功能逻辑，用子类替换父类，就是 <strong>“对修改关闭，对扩展开发”</strong>的设计原则，提高了代码的扩展性。</p>
+<p>####2.3 OOP语言更偏向于人<br>最初和机器打交道，是使用0和1这样的二进制指令，之后就演变出汇编语言，在之后才有了高级编程语言。这样一步一步下来，就是为了让人更好的写代码和读代码，让人和机器打交道更加容易，思维方式更加偏向于人类。<br>而OOP就是让我们能将聚焦点集中到业务本身，而不是去思考如何跟机器打交道。</p>
+<p>##3.设计看似面向对象，实则面向过程  </p>
+<p>####3.1 滥用的getter、setter方法<br>现在很多业务中为了方便，都是直接使用IDE或这Lombok插件自动生成所有个getter、setter方法，然而这种方法违反了封装的特性。例如Java中使用Lombok</p>
+<pre><code>@Data
+public class User{
+    private Integer id;
+    private String name;
+    private String age;
+    private List&lt;String&gt; selives;
+}</code></pre><p>本来id时不该暴露的，但是为了省事直接使用注解@Data,暴露了id的setter方法，这就违背了封装的特性。</p>
+<pre><code>@Getter
+public class User{
+    private Integer id;
+    @Setter
+    private String name;
+    @Setter
+    private String age;
+    private List&lt;User&gt; users;
+}</code></pre><p>像上面这样只暴露Getter方法和部分Setter方法，然而还是不安全的</p>
+<pre><code>User user = new User();
+user.getGoods().clear();</code></pre><p>这样子goods也会被清空，如果说自己写一个getter方法返回</p>
+<pre><code>Collections.unmodifiableList(this.goods);</code></pre><p>虽然无法clear(),但是我们可以这样</p>
+<pre><code>user.getGoods().get(0).setAge(1);</code></pre><p>修改其中对象的属性，然而这些实际上并不需要关注，因为没有一个业务开发者会闲着无聊这么干，将明知道不可修改的属性想尽一切办法的去修改。</p>
+<p>####3.2 滥用全局变量和全局方法<br>例如Utils类和Constants类。<br>Constants类常用来放置一些配置参数，如果我们将程序里所有用到的常量放在这个Constants类中，就会导致Constants类很大，从而影响代码的可维护性，可能到时候修改某个常量会很费劲，还会增加代码冲突的概率。<br>其次复用性也会降低，比如说其他项目要用到这个项目的一个类，这个类又依赖这个类的小部分变量，那就要将Constants类也引入，也就引入了很多没必要的变量。</p>
+<p>####3.3 定义数据和方法分离的类<br>一般情况下，Vo、Bo、Entity层只会定义数据，不会定义方法，这种开发模式叫做<strong>贫血模式</strong>，将所有的逻辑全部放在service层中。这就是典型的面向过程编程。<br>然而为什么<strong>贫血模型</strong>流行呢，是因为贫血模式易上手而且实现简单，并且不需要花大量时间去学习，对于一份新的代码不需要太了解也能够进行操作。但是<strong>充血模型</strong>就不一样了，需要开发者了解其中类于类的关系，需要学习的时间长，并且想要设计出一个好的充血模型需要大量的时间，不太符合一般公司的需求。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP2/" data-id="ck7b94tzl0004qwwi91v52weh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/03/OOP3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          OOP3
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/03/OOP1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">OOP1</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/03/03/OCP/">OCP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/SRP/">SRP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP4/">OOP4</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP3/">OOP3</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP2/">OOP2</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

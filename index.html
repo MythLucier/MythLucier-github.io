@@ -63,6 +63,586 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-OCP" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OCP/" class="article-date">
+  <time datetime="2020-03-03T02:06:10.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/OCP/">OCP</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#设计原则 </p>
+<p>##2.开闭原则(Open Closed Principle)</p>
+<p>####2.1 什么是开闭原则<br>开闭原则就是，<strong>对扩展开发，对修改关闭</strong>。<br>以下例子来解释这个原则。其中，AlertRule 存储告警规则，可以自由设置。Notification 是告警通知类，支持邮件、短信、微信、手机等多种通知渠道。NotificationEmergencyLevel 表示通知的紧急程度，包括 SEVERE（严重）、URGENCY（紧急）、NORMAL（普通）、TRIVIAL（无关紧要），不同的紧急程度对应不同的发送渠道。</p>
+<pre><code>public class Alert { 
+    private AlertRule rule; 
+    private Notification notification; 
+    public Alert(AlertRule rule, Notification notification) { 
+        this.rule = rule; 
+        this.notification = notification; 
+    } 
+    public void check(String api, long requestCount, long errorCount, long durationOfSeconds) { 
+        long tps = requestCount / durationOfSeconds; 
+        if (tps &gt; rule.getMatchedRule(api).getMaxTps()) { 
+            notification.notify(NotificationEmergencyLevel.URGENCY, &quot;...&quot;); 
+        } 
+        if (errorCount &gt; rule.getMatchedRule(api).getMaxErrorCount()) { 
+            notification.notify(NotificationEmergencyLevel.SEVERE, &quot;...&quot;); 
+        } 
+    }
+}</code></pre><p>目前的check功能就两个，当tps超过预先设置的最大值时，和接口请求出错数超过设置的最大值时，都会触发警告。<br>如果现在我们需要添加一个新功能，当每秒接口请求数超过最大值时也需要发出警告。我们改如何修改代码。<br>最简单的方式就是加个入参，并多加上一段if的逻辑判断就可以了。但是这样子就要连带着调用这个接口的所有方法都要进行对代码的修改，所以这个方式是很不好的。这种改动方式就是基于<strong>“修改”</strong>的方式。那我们如何通过<strong>开闭原则</strong>，也就是扩展来实现同样的功能呢？<br>首先我们需要对代码进行重构，让它的扩展性更好一些，如下：<br><strong>1.</strong>将check()函数的多个参数封装成ApiStatInfo类<br><strong>2.</strong>引入handler概念，将if判断逻辑分散再各个handler中</p>
+<p>具体代码如下</p>
+<pre><code>public class Alert { 
+    private List alertHandlers = new ArrayList&lt;&gt;();
+    public void addAlertHandler(AlertHandler alertHandler) { 
+        this.alertHandlers.add(alertHandler); 
+    } 
+    public void check(ApiStatInfo apiStatInfo) { 
+        for (AlertHandler handler : alertHandlers) { 
+            handler.check(apiStatInfo); 
+        } 
+    }
+}
+public class ApiStatInfo {
+    //省略constructor/getter/setter方法 
+    private String api; 
+    private long requestCount; 
+    private long errorCount; 
+    private long durationOfSeconds;
+}
+public abstract class AlertHandler { 
+    protected AlertRule rule; 
+    protected Notification notification; 
+    public AlertHandler(AlertRule rule, Notification notification) { 
+        this.rule = rule; 
+        this.notification = notification; 
+    } 
+    public abstract void check(ApiStatInfo apiStatInfo);
+}
+public class TpsAlertHandler extends AlertHandler { 
+    public TpsAlertHandler(AlertRule rule, Notification notification) { 
+        super(rule, notification); 
+    } 
+    @Override 
+    public void check(ApiStatInfo apiStatInfo) { 
+        long tps = apiStatInfo.getRequestCount()/ apiStatInfo.getDurationOfSeconds(); 
+        if (tps &gt; rule.getMatchedRule(apiStatInfo.getApi()).getMaxTps()) { 
+            notification.notify(NotificationEmergencyLevel.URGENCY, &quot;...&quot;); 
+        } 
+    }
+}
+public class ErrorAlertHandler extends AlertHandler { 
+    public ErrorAlertHandler(AlertRule rule, Notification notification){ 
+        super(rule, notification); 
+    } 
+    @Override 
+    public void check(ApiStatInfo apiStatInfo) { 
+        if (apiStatInfo.getErrorCount() &gt; rule.getMatchedRule(apiStatInfo.getApi()).getMaxErrorCount()) { 
+            notification.notify(NotificationEmergencyLevel.SEVERE, &quot;...&quot;); 
+        } 
+    }
+}</code></pre><p>如何使用重构后的alert呢，具体代码如下</p>
+<pre><code>public class ApplicationContext { 
+    private AlertRule alertRule; 
+    private Notification notification; 
+    private Alert alert; 
+    public void initializeBeans() { 
+        alertRule = new AlertRule(/*.省略参数.*/); //省略一些初始化代码 
+        notification = new Notification(/*.省略参数.*/); //省略一些初始化代码 alert = new Alert(); 
+        alert.addAlertHandler(new TpsAlertHandler(alertRule, notification)); 
+        alert.addAlertHandler(new ErrorAlertHandler(alertRule, notification)); 
+    } 
+    public Alert getAlert() { 
+        return alert; 
+    } // 饿汉式单例 private static final 
+    ApplicationContext instance = new ApplicationContext(); 
+    private ApplicationContext() { 
+        instance.initializeBeans(); 
+    } 
+    public static ApplicationContext getInstance() { 
+        return instance; 
+    }
+}
+public class Demo { 
+    public static void main(String[] args) { 
+        ApiStatInfo apiStatInfo = new ApiStatInfo(); // ...省略设置apiStatInfo数据值的代码 
+        ApplicationContext.getInstance().getAlert().check(apiStatInfo); 
+    }
+}</code></pre><p>利用ApplicationContext再初始化时加入所有的handler类然后遍历运行来实现的check。<br>这样重构了以后我们再来添加这个新功能，就只需要再ApiInfo中添加一个新属性timeOutCount，然后创建一个新的TimeOutHandler类,接着在initializeBeans初始化方法中alert多添加一个handler类，最后再设置一下timeOutCount警报的临界值就行了。这样子修改不会破坏了其他调用这函数的代码，这就是<strong>对修改关闭，对修改开放</strong>原则。</p>
+<p>####2.2 修改代码就意味着违背开闭原则么<br>不是的，从粗粒度的角度来看，我们上面也是修改了部分代码。但是从细粒度的角度来看，我们有一部分代码并没有修改原有的属性和方法，所以算是扩展。还有一部分代码(initializeBeans中)虽然修改了代码，但是这种小改动是无可避免的。如果说我们的修改<strong>没有破坏原有代码的正常运行</strong>，便可以说是一个合理的改动。</p>
+<p>####2.3 如何做到开闭原则<br>再写代码的时候，我们要时刻具备扩展、抽象、封装意识，可以在写代码的时候，多花点时间思考，留好扩展点，以便在未来需求变更时以最小的改动做到扩展。<br><strong>多态、依赖注入、基于接口而非实现编程、抽象</strong>都是有开闭原则的思想的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OCP/" data-id="ck7b94tz90002qwwi2ehpdmr9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-SRP" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/SRP/" class="article-date">
+  <time datetime="2020-03-03T02:05:40.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/SRP/">SRP</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#设计原则<br>经典的设计原则SOLID，KISS，YAGIN，DRY，LOD等</p>
+<p>##1.单一职责原则(SRP)</p>
+<p>####1.1 什么是单一职责原则(Single Responsibility Principle)<br><strong>SOLID</strong>并非只是一个原则，而是五个    设计原则组成的，而<strong>单一职责原则(SRP)</strong>就是其中的 <strong>S</strong>原则。它的原文描述是：<strong>A class or module should have a single reponsibility</strong>。<br>翻译过来就是，一个类或者模块应该只负责单一的责任(功能)。其中一个类也可以看成是一个模块，几个类也可以看成是一个模块，模块属于比较抽象的概念。<br>单一职责原则的定义非常简单，就是不要设计大而全的类，而是要设计粒度小、功能单一的类。如果一个类的功能不单单只有一个，而是有两个或以上，那它的职责就不单一了，应该将它拆分为粒度更小的类。</p>
+<p>####1.2 如何判断类的职责是否够单一<br>举个例子，就拿订单和用户信息来举例。订单和用户信息是两个完全没有关系，所以很容易判断出要分两个类。但是大部分情况下类的方法是分一个类还是两个类没那么容易判断，例如下面的UserInfo。</p>
+<pre><code>public class UserInfo { 
+    private long userId; 
+    private String username; 
+    private String email; 
+    private String telephone; 
+    private long createTime; 
+    private long lastLoginTime; 
+    private String avatarUrl; 
+    private String provinceOfAddress; // 省 
+    private String cityOfAddress; // 市 
+    private String regionOfAddress; // 区 
+    private String detailedAddress; // 详细地址 
+    // ......等等
+}</code></pre><p>可以看到上面的UserInfo类中记录了User的各种信息,但是我们是不是要将其中的地址信息抽提出来另写一个UserAddress类呢？如果这个产品中，用户地址信息和其他信息一样，只是单纯用来展示的，那么就没有必要抽提了。如果在其中添加了物流等一些模块，那么就有必要单独提取出来了。如果最后演变成了多个产品可以共用一个账号，那么就有必要将跟身份验证的信息(tel,email…)再抽提出来。<br>所以对于一个类的职责是否够单一，我们需要根据相应的应用场景来分析，不同的应用场景所分析出来的结果也会是不一样的。</p>
+<p>####1.3 如何写出职责单一的类<br>在实际的应用中，我们没必要一开始就一定要写出一个这样的类。我们可以先设计出一个<strong>稍微粗粒度的类</strong>，来满足业务的需求。在以后的开发中，再慢慢的进行修改，进行<strong>持续重构</strong>。<br>何时重构的例子：  </p>
+<p><strong>类中代码的函数或者属性过多，会影响到代码的可读性和可维护性，就需要对其进行思考是否可以拆分</strong>。  </p>
+<p><strong>类依赖其他的类太多，或者依赖类的其他类过多，有严重的耦合性，就需要进行考虑</strong>。  </p>
+<p><strong>私有方法过多，可以思考是否可以抽提出一个新的公用类，形成代码复用</strong>。  </p>
+<p><strong>当一个类的名字难以定义的时候，或者他的名字只能定义的很笼统的时候，就说明它的职责不够单一</strong>。</p>
+<p><strong>类中大量的方法都是集中操作类中的某几个属性，比如，在 UserInfo 例子中，如果一半的方法都是在操作 address 信息，那就可以考虑将这几个属性和对应的方法拆分出来</strong>。  </p>
+<p>####1.4 职责是不是越单一越好?<br>肯定是不是的,例如下面这个例子</p>
+<pre><code>/** 
+ * Protocol format: identifier-string;{gson string} 
+ * For example: UEUEUE;{&quot;a&quot;:&quot;A&quot;,&quot;b&quot;:&quot;B&quot;} 
+ */
+public class Serialization { 
+    private static final String IDENTIFIER_STRING = &quot;UEUEUE;&quot;; 
+    private Gson gson; 
+    public Serialization() { 
+        this.gson = new Gson(); 
+    } 
+    public String serialize(Map object){ 
+        StringBuilder textBuilder = new StringBuilder(); 
+        textBuilder.append(IDENTIFIER_STRING);
+        textBuilder.append(gson.toJson(object));
+        return textBuilder.toString(); 
+    } 
+    public Map deserialize(String text) { 
+        if (!text.startsWith(IDENTIFIER_STRING){ 
+            return Collections.emptyMap(); 
+        } 
+        String gsonStr = text.substring(IDENTIFIER_STRING.length()); 
+        return gson.fromJson(gsonStr, Map.class); 
+    }
+}</code></pre><p>如果我们想要这个Serialization类职责单一，是不是应该将它拆分为Serializer序列化类和DeSerializer反序列化类呢。肯定是不好的，因为序列化的规则应该是要统一的。如果将它分割为两个类，其中一个类的规则改变了，我们可能会忘记修改另外一个类，那么就会造成错误，所以这是不应该分开的。<br>所以类拆分的太细也是不好的，过度的拆分实际上会适得其反，反倒会降低类的内聚性，也会影响代码的可读性。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/SRP/" data-id="ck7b94tzr0007qwwi8j3s5tto" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OOP4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP4/" class="article-date">
+  <time datetime="2020-03-03T02:04:39.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/OOP4/">OOP4</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象4</p>
+<p>##1.组合和继承</p>
+<p>####1.1 为什么不推荐使用继承<br>继承是面向对象的四大特性之一 ，用来表示类的is-a关系，可以解决代码复用的问题。但是如果继承层次过深、过复杂，会影响到代码的维护性和解读。很多人觉得继承是一个反模式，要尽量少用或者不用。（为什么）举例：<br>比如父类是一个鸟类，但是有些鸟会飞，有些鸟不会飞。</p>
+<pre><code>public class AbstractBird{
+    public void fly(){};
+}</code></pre><p>如果我们在子类中重写fly方法，让他抛出异常，那么不会飞的鸟有很多，就会导致我们每写一个这种类就要重写依次fly方法。这种设计方法的其中一个缺点就是这个，其次也违背了最小知识原则，暴露了不该暴露的接口，增加了类使用过程中被误用的概率。<br>如果说想要如下图一样的设计  </p>
+<img src="/2020/03/03/OOP4/4-1.jpg" class="" title="This is an example image">
+<p>这样类的深度就增加了，如果我们还有其他的分类，比如会叫、不会叫等就会增加类的复杂度，导致很难维护和解读。</p>
+<p>####1.2 组合相比继承的优势  </p>
+<pre><code>public interface Flyable { 
+    void fly();
+}
+public interface Tweetable {
+     void tweet();
+}
+public interface EggLayable { 
+    void layEgg();
+}</code></pre><p>我们可以利用接口进行组合，对于不同的鸟类选择不同组合的接口继承。例如，会飞会叫的鸟实现Flyable和Tweetable接口，会飞会下蛋的是实现Flyable和EggLayable接口等类似。<br>但是只定义接口不定义实现，会让我们每个类都要实现一次接口导致代码冗余。我们可以写三个类分别实现上述接口再进行组合和委托。</p>
+<pre><code>public class FlyImpl{
+    void fly(){...}
+}
+....
+
+public class sparrow implements Flyable,Tweetable,EggLayable{
+    private FlyImpl flyImpl = new FlyImpl(); //组合
+    private TweetImpl ....
+    ....
+
+    @Override
+    void fly(){
+        flyImpl.fly(); //委托
+    }
+    ....
+}</code></pre><p>类的继承主要有三个作用：表示is-a关系，支持多态，代码复用。而这三个作用都可以用其他技术来代替。<br>is-a关系，可以使用组合和接口的has-a关系来实现，多态可以利用接口实现，代码复用则是上面例子用到的组合和委托。</p>
+<p>####1.3 如何判断使用继承还是组合<br>类的继承变为组合，需要我们做更细粒度的拆分，就会需要设计更多的类和接口。所以如果类的继承机构稳定，层次不复杂，完全可以直接使用类的继承而不是去选择组合。只有相反的情况下，类的继承结构不稳定、层次复杂的情况下，选择组合会更好。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP4/" data-id="ck7b94tzq0006qwwi5y7qdxbg" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OOP3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP3/" class="article-date">
+  <time datetime="2020-03-03T02:04:10.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/OOP3/">OOP3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象3</p>
+<p>##1.接口和抽象类的区别(Java)</p>
+<p>####抽象</p>
+<pre><code>public abstract class Animal{
+    private String name;
+    private String like;
+    public Animal(String name, String like){...}
+    public abstract void eat();
+}
+
+public class Bird extends Animal{
+    private boolean canFly;
+    public Bird(String name, String like, boolean canFly){
+        super(name,like);
+        this.canFly = canFly;
+    }
+
+    @Override
+    public void eat(){...}
+}
+
+public class Dog extends Animal(){
+    private boolean isDanger;
+    public Dog(...){...}
+
+    @Override
+    public void eat(){...}
+}</code></pre><p><strong>1.</strong> 抽象类不允许被实例化，只能被继承。如果你强行去new一个抽象类就会报错。<br><strong>2.</strong> 抽象类可以包含属性和方法，其中不包含代码实现的方法叫做抽象方法。<br><strong>3.</strong> 子类继承抽象类，子类必须重写抽象类(父类)中的抽象方法。</p>
+<p>####接口</p>
+<pre><code>public interface Havior{
+    void fly();
+}
+
+public class Sparrow implements Havior{
+    @Override
+    void fly(){...}
+}
+
+public class Bee implements Havior{
+    @Override
+    void fly(){...}
+}</code></pre><p><strong>1.</strong> 接口中不能包含成员变量。其中声明的所有变量都会作为public static final使用(里面只能声明这种类型的变量)。<br><strong>2.</strong> 接口只能声明方法，方法不能包含代码实现。<br><strong>3.</strong> 类实现接口的时候，必须实现接口中声明的所有方法。</p>
+<p>####总结<br>抽象类实际上就是类，只不过是特殊类，抽象类中可以包含成员变量。接口中不能包含成员变量。类只能继承一个抽象类，但是能实现多个接口。抽象类和类像是<strong>is-a</strong>的区别，接口和类是<strong>has-a</strong>区别。对于接口，有一个更加形象的叫法， <strong>协议</strong>。</p>
+<p>##2.抽象类和接口分别能解决什么编程问题</p>
+<p>####抽象类<br>抽象类的作用不能被实例话，只能被继承。所以它的作用就是用来解决代码复用问题，还有实现多态。</p>
+<p>####接口<br>接口侧重于解耦，接口是对行为的一直抽象。调用这只需要关注抽象的接口，不需要了解具体实现。接口实现了方法和实现的分离，降低了代码的耦合性，提高了代码的可扩展性。</p>
+<p>##3.如何决定使用抽象还是接口<br>如果我们要表示一种<strong>is-a</strong>关系，为了去解决代码复用的问题，我们就用<strong>抽象</strong>。<br>如果我们要表示一种<strong>has-a</strong>关系，为了去抽象方法，我们就使用<strong>接口</strong>。</p>
+<p>##3.基于接口而非实现编程</p>
+<p>####3.1 如何解读其中的“接口”<br>这条原则的英文描述为<strong>“Program to an interface, not an implementation”</strong>。这条原则最早出现于GoF的《设计模式》中，是一条比较抽象、泛化的设计思想。应用这条原则可以非常有效的提高代码质量，将接口和实现分离，实现代码的解耦、高扩展。<br><strong>越抽象、越底层、越脱离具体实现的设计，越能提高代码的灵活性。在应对需求的变化时，好的代码设计，不仅可以应对当下的需求，还能够在以后需求需要变动时，在不破坏原有代码的情况下灵活应对。</strong></p>
+<p>####3.2 如何运用到实战中<br>极客时间-&gt;设计模式之美-&gt;09</p>
+<p>####3.3 是否所有类都要使用接口<br>肯定不是的，过度使用接口，会使接口泛滥，都导致许多功能单一的方法设计成接口，导致不必要的开发负担。只有在功能易变动，代码需要在扩展和维护方面下功夫等方面时，去使用接口才是一种正确的设计方式。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP3/" data-id="ck7b94tzm0005qwwi793kgrr6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OOP2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP2/" class="article-date">
+  <time datetime="2020-03-03T02:03:42.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/OOP2/">OOP2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象2<br><strong>编程范式一共有三种，面向对象编程，面向过程编程，函数式编程</strong></p>
+<p>##1.什么是面向过程编程和面向过程编程语言</p>
+<p>面向过程编程是一种编程范式，不过他是以过程为基本单元(方法、函数、操作这些)，将数据和方法分离作为主要特点，是一种流程化的编程风格。</p>
+<p>面向过程编程语言的特点就是不支持类和对象两个语法概念(例如C),不支持面向对象编程特性，仅支持面向过程编程。</p>
+<pre><code>public class User { 
+    private String name; 
+    private int age; 
+    private String gender; 
+    public User(String name, int age, String gender) { 
+        this.name = name; 
+        this.age = age; 
+        this.gender = gender; 
+    } 
+    public static User praseFrom(String userInfoText) {
+        // 将text(“小王&amp;28&amp;男”)解析成类User 
+    } 
+    public String formatToText() { 
+        // 将类User格式化成文本（&quot;小王\t28\t男&quot;） 
+    }
+}
+
+public class UserFileFormatter { 
+    public void format(String userFile, String formattedUserFile) { 
+        // Open files... 
+        List users = new ArrayList&lt;&gt;(); 
+        while (1) { 
+            // read until file is empty 
+            // read from file into userText... 
+            User user = User.parseFrom(userText);
+            users.add(user); 
+        } 
+        // sort users by age... 
+        for (int i = 0; i &lt; users.size(); ++i) { 
+            String formattedUserText = user.formatToText(); 
+            // write to new file... 
+        } 
+        // close files... 
+    }
+}
+public class MainApplication { 
+    public static void main(Sring[] args) { 
+        UserFileFormatter userFileFormatter = new UserFileFormatter(); 
+        userFileFormatter.format(&quot;/home/zheng/users.txt&quot;, &quot;/home/zheng/formatted_users.txt&quot;); 
+    }
+}</code></pre><p>以上就是一种面向过程编程的代码。</p>
+<p>##2.面向对象编程语言相比面向过程编程语言的优势</p>
+<p>####2.1 OOP更适合进行大规模复杂程序的开发<br>大规模复杂程序的处理流程错综复杂，而且并非只有一条主线，流程图画出来的话会是一个网状图。<br>面向过程编程像是一种应负式的编程方式，代码复用率很低，所以如果开发大规模复杂程序会很麻烦并且难以维护。<br>如果我们使用面向对象编程方式，我们一开始会是去思考如何设计这些类，而不是去将流程拆解，设计完类后再去组合拼装，来形成整个程序。如果将类比喻成积木，那么我们要做的就是将需要的积木组件做出来，然后再去搭建大厦，而不是直接做一个无法拆解的大厦出来。</p>
+<p>####2.2 OOP代码更易扩展、易维护、易复用<br>因为面向对象编程有四大特性，<strong>封装、继承、多态、抽象</strong>。<br><strong>封装</strong>防止数据会像面向过程编程一样会被任意方法修改，所以提高了代码的易维护性。<br><strong>抽像</strong>，函数本身就是一种抽象。但是面向对象编程还提供了其他方式的抽象，比如基于接口的抽像，我们可以再不改变原有实现的情况下，轻松替换现有的逻辑，提高代码的可扩展性。<br><strong>继承</strong>，多个类中如果我们发现有可公用的属性或者方法，就可以抽提出一个父类，让他们继承，这样可以提高代码的复用性。<br><strong>多态</strong>，在子类中也可以重写原来的功能逻辑，用子类替换父类，就是 <strong>“对修改关闭，对扩展开发”</strong>的设计原则，提高了代码的扩展性。</p>
+<p>####2.3 OOP语言更偏向于人<br>最初和机器打交道，是使用0和1这样的二进制指令，之后就演变出汇编语言，在之后才有了高级编程语言。这样一步一步下来，就是为了让人更好的写代码和读代码，让人和机器打交道更加容易，思维方式更加偏向于人类。<br>而OOP就是让我们能将聚焦点集中到业务本身，而不是去思考如何跟机器打交道。</p>
+<p>##3.设计看似面向对象，实则面向过程  </p>
+<p>####3.1 滥用的getter、setter方法<br>现在很多业务中为了方便，都是直接使用IDE或这Lombok插件自动生成所有个getter、setter方法，然而这种方法违反了封装的特性。例如Java中使用Lombok</p>
+<pre><code>@Data
+public class User{
+    private Integer id;
+    private String name;
+    private String age;
+    private List&lt;String&gt; selives;
+}</code></pre><p>本来id时不该暴露的，但是为了省事直接使用注解@Data,暴露了id的setter方法，这就违背了封装的特性。</p>
+<pre><code>@Getter
+public class User{
+    private Integer id;
+    @Setter
+    private String name;
+    @Setter
+    private String age;
+    private List&lt;User&gt; users;
+}</code></pre><p>像上面这样只暴露Getter方法和部分Setter方法，然而还是不安全的</p>
+<pre><code>User user = new User();
+user.getGoods().clear();</code></pre><p>这样子goods也会被清空，如果说自己写一个getter方法返回</p>
+<pre><code>Collections.unmodifiableList(this.goods);</code></pre><p>虽然无法clear(),但是我们可以这样</p>
+<pre><code>user.getGoods().get(0).setAge(1);</code></pre><p>修改其中对象的属性，然而这些实际上并不需要关注，因为没有一个业务开发者会闲着无聊这么干，将明知道不可修改的属性想尽一切办法的去修改。</p>
+<p>####3.2 滥用全局变量和全局方法<br>例如Utils类和Constants类。<br>Constants类常用来放置一些配置参数，如果我们将程序里所有用到的常量放在这个Constants类中，就会导致Constants类很大，从而影响代码的可维护性，可能到时候修改某个常量会很费劲，还会增加代码冲突的概率。<br>其次复用性也会降低，比如说其他项目要用到这个项目的一个类，这个类又依赖这个类的小部分变量，那就要将Constants类也引入，也就引入了很多没必要的变量。</p>
+<p>####3.3 定义数据和方法分离的类<br>一般情况下，Vo、Bo、Entity层只会定义数据，不会定义方法，这种开发模式叫做<strong>贫血模式</strong>，将所有的逻辑全部放在service层中。这就是典型的面向过程编程。<br>然而为什么<strong>贫血模型</strong>流行呢，是因为贫血模式易上手而且实现简单，并且不需要花大量时间去学习，对于一份新的代码不需要太了解也能够进行操作。但是<strong>充血模型</strong>就不一样了，需要开发者了解其中类于类的关系，需要学习的时间长，并且想要设计出一个好的充血模型需要大量的时间，不太符合一般公司的需求。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP2/" data-id="ck7b94tzl0004qwwi91v52weh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OOP1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP1/" class="article-date">
+  <time datetime="2020-03-03T02:01:50.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/03/OOP1/">OOP1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象1</p>
+<p>##1.什么是面向对象（OOP Object Oriented Programming）<br>面向对象编程中有两个非常重要的基础概念，<strong>类(class)</strong> 和 <strong>对象(object)</strong> 。<br>面向对象编程是一种风格，具有4大特性，<strong>封装，抽象，继承，多态</strong>。而面向对象编程语言则是一种编程的机制，能方便的实现面向对象编程。（例如编程语言就是一种编程机制，Java语言是一种面向对象编程语言）  </p>
+<p>然而面向对像编程语言写出来的代码不一定是面向对象编程的，例如目前一般的业务，都是使用<strong>贫血模型</strong>，偏向的是<strong>面向过程编程</strong>。反之，不是面向对象编程语言也可以写出面向对象编程的代码。</p>
+<p>###1.1 什么是is-a<br>    public Class Dad{<br>        void looks(){…};<br>    }</p>
+<pre><code>public Class OtherDad extends Dad{
+    @Overrider
+    void looks(){...};
+}
+public Class Son extends Dad{
+    @Overrider
+    void looks(){...};
+    void hobby(){...};
+}</code></pre><p>is-a和is-like-a都可以说是表示一种继承关系，is-a表示的是单纯的继承父类并只是重写了方法而未增加了新的东西，而is-like-a则是在原有的基础上增加了新的东西。我们可以说别人的父亲也是父亲，但是我们只能说儿子像爸爸，不可能说儿子是爸爸。</p>
+<p>###1.2 什么是has-a,什么是is-like-a<br>    public interface Havior{<br>        void fly();<br>    }<br>    public Class Sparrow implements Havior{<br>        void fly(){…};<br>    }<br>其中麻雀有飞行这种行为，接口是可以继承多个的，而且飞行和麻雀并不是一个唯一的关系，而只是麻雀的一个行为，所以Sparrow和Havior只是一个has-a 的关系。<strong>(has-a代表这一种从属关系)</strong></p>
+<p>##2.什么是面向对象分析(OOA Object Oriented Analysis)和面向对象设计(OOD Object Oriented Design)<br>OOA,OOD,OOP三个合在一起就是面向对象分析、设计、编程(实现)，正好就是面向对象软件开发时我们要经历的三个阶段。<br>面向对象分析、设计为什么要加上面向对象呢，因为都是围绕着面向对象来进行的，而不是直接的进行分析和设计。分析和设计最终的产出是类的设计，包括程序被拆解为哪些类，每个类都有哪些功能，类和类之间的交互。而OOA和OOD比它们更加具体，更加贴近代码，更能顺利地过渡到面向对象编程环节。</p>
+<p>##3.什么是UML(Unified Model Language)<br>UML,是<strong>统一建模语言</strong>的简称，很多讲解面向对象的书籍或设计模式的书籍常用它来画图表达设计思路。<br>UML定义了很多种类之间的关系，如下<br><strong>泛化，实现，关联，聚合，组合，依赖等</strong></p>
+<p>##4.封装，抽象，继承，多态</p>
+<p>###4.1 封装<br>封装的作用就是用来数据访问的保护和隐藏数据的。类通过暴露有限的访问接口，授权外部仅能通过类提供的方式(类里暴露的方法)来访问内部的信息或数据。<br>    public class Xxx{<br>        private int id;<br>        private int num;<br>        public Xxx(int id,int num){<br>            this.id = id;<br>            this.num = num;<br>        }<br>        public void setNum(int num){<br>            this.num = num;<br>        }<br>        public int getNum(){<br>            return num;<br>        }<br>        public int getId(){<br>            return id;<br>        }<br>    }</p>
+<p>其中Xxx类封装了数据num和id，get和set方法就是Xxx类向外暴露的接口，用来给外部来访问num和修改num的作用。而id作为唯一标识所以在创建的时候就已经确定，因此不允许修改，也没有暴露的set方法。这就是封装的作用,这种机制就叫做<strong>访问权限控制</strong><br>封装的意义就在于，它只暴露了必要的操作方法，提高了类的易用性，减少了错误的操作(防止调用者不小心修改了不应该变动的数据)，并且可以在不太了解业务细节进行操作。<br>例如，空调遥控器摁一下降低温度就可以，如果直接暴露了全部的数据，那么操作了温度的参数后我们还需要了解改变其他那些参数。</p>
+<p>###4.2 抽象<br>抽象的作用是如何去隐藏方法的具体实现，让调用者只需要关心方法提供了那些功能，并不需要知道这些功能是怎么实现的。<br>Java种，我们常借助的就是接口类(Interface)和抽象类(abstract关键字)。</p>
+<pre><code>public interface IPictureStorage { 
+    void savePicture(Picture picture); 
+    Image getPicture(String pictureId); 
+    void deletePicture(String pictureId); 
+    void modifyMetaInfo(String pictureId, PictureMetaInfo metaInfo);
+}
+
+public class PictureStorage implements IPictureStorage { 
+    // ...省略其他属性... 
+    @Override 
+    public void savePicture(Picture picture) { ... }
+    @Override 
+    public Image getPicture(String pictureId) { ... }
+    @Override 
+    public void deletePicture(String pictureId){ ... } 
+    @Override 
+    public void modifyMetaInfo(String pictureId, PictureMetaInfo metaInfo) { ... }
+}</code></pre><p>例如上面是图片储存的代码，调用者只需要知道IPictureStorage接口类种暴露了那些方法就行了，而不需要去了解它是如何实现的。</p>
+<p>#####抽象的意义<br><strong>抽象</strong>及其前面的<strong>封装</strong>都是人类处理复杂性的有效手段。在面对复杂系统的时候，人脑能承受的信息复杂程度是有限的，所以我们必须忽略掉一些非关键性的实现细节。而抽象作为一种只关注功能点不关注实现的设计思路，正好帮我们的大脑过滤掉许多非必要的信息。<br>而且抽象是一个非常宽泛的设计思想，在代码设计中起到了非常重要的指导作用。例如，基于接口而非实现编程、开闭原则(对扩展开放，对修改关闭)、代码解耦(降低代码耦合性)等。</p>
+<p>###4.3 继承<br>继承最大的一个好处就是代码复用，子类可以获得父类中非私有方法和属性，避免了重复代码。</p>
+<p>###4.4多态<br>多态是指，<strong>子类可以替换父类</strong>。和字面意思很相似，就是从一个共同点出发往不同方向发展。  </p>
+<pre><code>public class Fly{
+    void canFly();
+}
+
+public class Bird1 extends Fly{
+    @Override
+    void canFly(){...}
+    void eatMeat(){...}
+}
+
+public class Bird2 extends Fly{
+    @Override
+    void canFly(){...}
+    void eatGrass(){...}
+}</code></pre><p>Bird1和Bird2两个类都继承Fly，他们的共同点就是都是会飞行的鸟，但他们又有不同点就是一个食肉的一个食草的，这就是<strong>多态</strong>。例如集合类都是继承Collection类，但他们的功能都不一样，就是一种<strong>多态</strong>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP1/" data-id="ck7b94tzk0003qwwi7gkzgv7a" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-HashTable-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/01/13/HashTable-2/" class="article-date">
@@ -101,7 +681,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/HashTable-2/" data-id="ck5clk4ge0004a8wi0i6u3ens" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/HashTable-2/" data-id="ck7b94tyw0000qwwi23axg01a" class="article-share-link">Share</a>
       
       
     </footer>
@@ -158,7 +738,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/HashTable-1/" data-id="ck5clk4gb0002a8wi6jl2andz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/HashTable-1/" data-id="ck7b94tz70001qwwi4jsug010" class="article-share-link">Share</a>
       
       
     </footer>
@@ -205,7 +785,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/Hash/" data-id="ck5clk4g90001a8wi05mg3hnn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/Hash/" data-id="ck7b94tzw000aqwwi8ksda4h7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -264,435 +844,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/SkipList/" data-id="ck5clk4gm0007a8wiaqz62hrk" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-halfFind" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/halfFind/" class="article-date">
-  <time datetime="2020-01-13T15:17:49.000Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/halfFind/">halfFind</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#二分查找</p>
-<p>##1.二分查找无处不在<br>二分查找法也叫折半查找法，二分查找法是一个简单易懂的快速查找法，举个例子，对于1024个数据中找出一个准确的数字，只需要10次，对于再大的数据他的查找次数也只会是log2（N），所以时间复杂度是O(logn),而对数函数曲线我们也是了解的。<br>但是对于二分查找法运用上的缺陷，那就是他只能运用在已排序好的数组了,其次数据量太小也不适合用二分查找法。</p>
-<p>##2.二分查找的实现<br>最简单的就是有序数组中不存在重复元素</p>
-<pre><code>public int bsearch(int[] a, int n, int value) {
-    int low = 0;
-    int high = n - 1; 
-    while (low &lt;= high) { 
-        int mid = (low + high) / 2; 
-        if (a[mid] == value) { 
-            return mid; 
-        } 
-        else if (a[mid] &lt; value) {
-            low = mid + 1; 
-        } 
-        else { 
-            high = mid - 1; 
-        } 
-    } 
-    return -1;
-}</code></pre><p>###2.1容易出错的 3 个地方。</p>
-<p>####2.1.1 循环退出条件<br>注意是 low&lt;=high，而不是 low&gt;1)。<br>####2.1.2 mid 的取值<br>实际上，mid=(low+high)/2 这种写法是有问题的。因为如果 low 和 high 比较大的话，两者之和就有可能会溢出。改进的方法是将 mid 的计算方式写成 low+(high-low)/2。更进一步，如果要将性能优化到极致的话，我们可以将这里的除以 2 操作转化成位运算 low+((high-low)&gt;&gt;1)。因为相比除法运算来说，计算机处理位运算要快得多。<br>####2.1.3 low 和 high 的更新<br>low=mid+1，high=mid-1。注意这里的 +1 和 -1，如果直接写成 low=mid 或者 high=mid，就可能会发生死循环。比如，当 high=3，low=3 时，如果 a[3] 不等于 value，就会导致一直循环不退出。</p>
-<p>##3.二分查找变形</p>
-<p>####3.1查找第一个值等于给定值的元素</p>
-<pre><code>public int bsearch(int[] a, int n, int value) { 
-    int low = 0; 
-    int high = n - 1; 
-    while (low &lt;= high) { 
-        int mid = low + ((high - low) &gt;&gt; 1); 
-        if (a[mid] &gt; value) { 
-            high = mid - 1; 
-        } 
-        else if (a[mid] &lt; value) { 
-            low = mid + 1; 
-        } 
-        else { 
-            if ((mid == 0) || (a[mid - 1] != value))     
-                return mid; 
-            else 
-                high = mid - 1; 
-        } 
-    } 
-    return -1;
-}</code></pre><p>####3.2查找最后一个值等于给定值的元素<br>和上面代码差不多</p>
-<pre><code>public int bsearch(int[] a, int n, int value) { 
-    int low = 0; 
-    int high = n - 1; 
-    while (low &lt;= high) { 
-        int mid = low + ((high - low) &gt;&gt; 1); 
-        if (a[mid] &gt; value) { 
-            high = mid - 1; 
-        } 
-        else if (a[mid] &lt; value) { 
-            low = mid + 1; 
-        } 
-        else { 
-            if ((mid == n - 1) || (a[mid + 1] != value)) 
-                return mid; 
-            else 
-                low = mid + 1; 
-        } 
-    } 
-    return -1;
-}</code></pre><p>####3.3查找第一个大于等于给定值的元素</p>
-<pre><code>public int bsearch(int[] a, int n, int value) { 
-    int low = 0; 
-    int high = n - 1; 
-    while (low &lt;= high) { 
-        int mid = low + ((high - low) &gt;&gt; 1); 
-        if (a[mid] &gt;= value) { 
-            if ((mid == 0) || (a[mid - 1] &lt; value))
-                return mid; 
-            else 
-                high = mid - 1; 
-        } 
-        else { 
-            low = mid + 1; 
-        } 
-    } 
-    return -1;
-}</code></pre>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/halfFind/" data-id="ck5clk4gg0006a8wia2dwe7en" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-sort-3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/sort-3/" class="article-date">
-  <time datetime="2020-01-13T15:13:50.000Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/sort-3/">sort-3</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#排序3 线性排序</p>
-<p>##1.桶排序</p>
-<p>####1.1什么是桶排序<br>桶排序，故名思意就是要用到桶，核心的思想就是将数据放到几个有序的桶里，然后再每个桶里进行排序，如图  </p>
-<img src="/2020/01/13/sort-3/3-1.jpg" class="" title="This is an example image">
-<p>然后每个桶里的数据都排序完了以后，再按桶的次序依次取出，排序就完成了。</p>
-<p>####1.2桶排序的时间复杂度<br>桶排序的时间复杂度是<strong>O(n)</strong>。因为每个数据分到每个桶里，数据在每个桶里依然还是需要排序，所以就是O(n)。<br>举个例子：<br>有n个数据，分到m个桶里，那么理想一点，每个桶里的数据都是k=n/m个数据。每个桶里使用快速排序，时间复杂度就是O(klogk)，m个桶就是<br>O(m*klogk)，所以时间复杂度就是(nlog(n/m)),当桶的个数m接近n的时候，那时间复杂度就接近O(n)了。</p>
-<p>####1.3为什么桶排序不能代替之前的其他排序<br>因为桶排序的要求十分的苛刻，就是桶的个数要十分接近n的个数，如果所有数据都放在一个桶里，那他就会退化为O(nlogn)了。<br><strong>桶排序比较适合用在外部排序</strong>。所谓的外部排序，就是在数据放在外部磁盘中然后排序。有时候数据量比较大，内存放不下的时候，就无法放在内存中了。</p>
-<p>####1.4例题：<br>比如说我们有 10GB 的订单数据，我们希望按订单金额（假设金额都是正整数）进行排序，但是我们的内存有限，只有几百 MB，没办法一次性把 10GB 的数据都加载到内存中。这个时候该怎么办呢？</p>
-<p>我们可以先扫描一遍文件，然后大致的了解下金额的范围，接着根据金额分额进行划分。例如我们扫到了1-10W的范围，那么我们可以分为100个桶，第一个桶1-1000，第二个桶1001-2000….这样划分，然后进行编号: 00,01,02… 。<br>然后假设每个桶的数据均匀，那么每个桶的数据大小就是102.4mb，我们再依次的进行快速排序，然后依次按编号读取数据到文件中，就可以完成排序了。<br>当然数据不可能均匀划分的，我们可以再发现一个桶中数据太大装不下的时候可以再对它进行划分，知道所有文件都能读入内存为止。</p>
-<p>##2.计数排序</p>
-<p>####2.1什么是计数排序<br>计数排序在我看来是属于桶排序的特殊情况，那就是当数据量远远大于数据的范围时，或者说要排序数据的范围不大时可以采用计数排序，例如中考、高考的排名就是利用了计数排序</p>
-<p>####2.2计数排序如何排序的<br>比如高考的考生有几十万人数，而分数只有810分，那么我们就可以创建一个数组x，大小为811，然后没查到一个分数，对应的为止就+1，这样子我么就能知道多少分对应多少名么。<br>如何找到数组中对应的位置呢，我们可以对上面记录好的数组进行顺序求和，就是哪个为止对应这个分数以前有多少人，c[3]遍是将x[0]+x[1]+x[2]+x[3]。然后我们从后往前扫描，当我们扫描到分数为3的人时，就将他放在c[3]值的位置，然后c[3]–。</p>
-<p><strong>PS:</strong> 计数排序只能给非负整数数数据进行排序，如果要对其他数据排序，需要在不改变其相对大小的情况下转化为整数。例如只有一个小数点的数据，我们可以将里面的数据都乘10再进行计数排序</p>
-<p>##3.基数排序</p>
-<p>####例题:我们再来看这样一个排序问题。假设我们有 10 万个手机号码，希望将这 10 万个手机号码从小到大排序，你有什么比较快速的排序方法呢？<br>快排的时间复杂度可以到达O(nlogn)。对桶排序和计数排序而言，手机号码是11位，范围太大，所以不适用。这时候就有一种新的排序，<strong>基数排序</strong>。<br>先按照最后一位来排序手机号码，然后，再按照倒数第二位重新排序，以此类推，最后按照第一位重新排序。经过 11 次排序之后，手机号码就都有序了。</p>
-<img src="/2020/01/13/sort-3/3-2.jpg" class="" title="This is an example image">
-
-<p>注意，这里按照每位来排序的排序算法要是稳定的，否则这个实现思路就是不正确的。因为如果是非稳定排序算法，那最后一次排序只会考虑最高位的大小顺序，完全不管其他位的大小关系，那么低位的排序就完全没有意义了。<br>如果数据的长度不同，那么位数不够的可以在后面补0，根据ASCII值可以知道所有的字母都大于0。</p>
-<p>##4.如何实现一个通用的额、高性能的排序函数<br>极客时间-&gt;数据结构与算法之美-&gt;14章节</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/sort-3/" data-id="ck5clk4go0009a8wih7ih5rbt" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-sort-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/sort-2/" class="article-date">
-  <time datetime="2020-01-13T15:13:43.000Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/sort-2/">sort-2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#排序2</p>
-<p>##1.归并排序</p>
-<p>###1.1归并排序的原理<br>将一个待排序的数组分为2部分，然后递归一直分解直到最后2个元素时才进行排序，然后递归返回，接着合并返回回来的2个排列好的前后2个数组，下面是分解图  </p>
-<img src="/2020/01/13/sort-2/1.jpg" class="" title="This is an example image">
-
-<p>归并排序使用的就是<strong>分治思想</strong>，分治思想一般都是用递归来解决的。<br><strong>分治是一种解决问题的处理方式，而递归是一种编程技巧。</strong></p>
-<p>###1.2归并排序的性能分析<br>####a.归并排序是排序稳定算法么<br>归并排序是稳定的排序算法，因为如果2个数相等那么他们在排序的时候的前后顺序是不会改变的<br>####b.归并排序的时间复杂度是多少</p>
-<p>O(nlogn)<br>计算公式(copy的)</p>
-<pre><code>T(1) = C； n=1时，
-只需要常量级的执行时间，所以表示为C。
-T(n) = 2*T(n/2) + n； n&gt;1
-
-T(n) = 2*T(n/2) + n 
-     = 2*(2*T(n/4) + n/2) + n 
-     = 4*T(n/4) + 2*n 
-     = 4*(2*T(n/8) + n/4) + 2*n 
-     = 8*T(n/8) + 3*n 
-     = 8*(2*T(n/16) + n/8) + 3*n 
-     = 16*T(n/16) + 4*n 
-     ...... 
-     = 2^k * T(n/2^k) + k * n 
-     ......</code></pre><p>我们可以得到 T(n) = 2^kT(n/2^k)+kn。当 T(n/2^k)=T(1) 时，也就是 n/2^k=1，我们得到 k=log2n。我们将 k 值代入上面的公式，得到 T(n)=Cn+nlog2n 。如果我们用大 O 标记法来表示的话，T(n) 就等于 O(nlogn)。所以归并排序的时间复杂度是 O(nlogn)。</p>
-<p>####c.归并排序的空间复杂度是多少</p>
-<p>O(n),所以归并排序不是原地排序.<br>为什么不是O(nlogn)，因为计算空间复杂度不能和时间复杂度一样，递归中创建的数组属于临时的所以合并完成后就会释放掉，因此时O(n)</p>
-<p>##2.快速排序</p>
-<p>快速排序就是以数组中的数为基准，然后将这个数大的放在他的右边，其余的放在它的左边，递归这样排序。</p>
-<p>###2.2快速排序的性能分析<br>####a.时间复杂度<br>O(nlogn)</p>
-<p>####b.空间复杂度<br>O(1),快速排序有一种很特殊的处理方法，前后指针来操作，是原地排序。<br>(代码就不贴了，在自己电脑上)</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/sort-2/" data-id="ck5clk4gf0005a8wibtku5ndt" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-sort-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/sort-1/" class="article-date">
-  <time datetime="2020-01-13T15:13:33.000Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/sort-1/">sort-1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#排序1</p>
-<p>##1.如何分析一个“排序算法”</p>
-<p>###1.1 最好情况、最坏情况、平均情况时间复杂度<br>就是我们在分析一个排序算法的复杂度的时候，我们要列出他们这三个复杂度，并且还要列出他们出现的时候的原始数据的排序状态。</p>
-<p>###1.2复杂度的系数、常数、低阶<br>因为在我们实际的开发中，我们排序的目标可能是10个、100个、1000个这样的小规模数据，所以要把他们也考虑进来。</p>
-<p>###1.3比较次数和交换次数<br>适用于比较的排序算法。</p>
-<p>##2.排序的内存消耗<br>内存消耗我们可以通过空间复杂度来计算，所以有一个新概念叫<strong>原地排序</strong>，就是值<strong>空间复杂度为O(1)</strong>的排序算法。</p>
-<p>##3.排序算法的稳定性<br>排序完成前和完成后，待排序的列序中相等的元素的前后关系是不是一致的，就比如<strong>[1，4，2(前)，2，3]</strong>,排序后为<strong>[1，2(前)，2，3，4]</strong>,就叫做稳定的排序。如果排序后为 <strong>[1,2,2(前),3,4]</strong>那就是不稳定排序了。<br>冒泡排序就是<strong>稳定排序</strong>，选择排序就是 <strong>不稳定排序</strong>。</p>
-<p>##4.逆序度和有序度</p>
-<p><strong>逆序度</strong> 就是这个数组中一共有多少个<strong>逆序对</strong>， <strong>有序度</strong>就是这个数组中有多少个 <strong>有序对</strong>  。<br>当以个数组成正序排列时，例如[1,2,3,4,5],那么他的有序度是满的，就叫做<strong>满有序度</strong>  。<br>关于这三个概念，就可以得到一个公式<strong>逆序度=满有序度-有序度</strong>。</p>
-<p>##5.为什么插入排序比冒泡排序更受欢迎</p>
-<p>因为冒泡排序无论怎么优化，元素的交换个数都是个固定值，是原始数据的<strong>逆序度</strong>。虽然插入排序也是一样的，但是从代码上来看，冒泡排序比插入排序复杂，因为冒泡排序需要3个赋值操作，而插入排序只有一个赋值操作。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/sort-1/" data-id="ck5clk4gn0008a8wi96h10wdh" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-栈+队列问题" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/" class="article-date">
-  <time datetime="2020-01-13T15:12:55.590Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/">栈+队列问题</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#栈和队列的相关问题</p>
-<p>###1.我们在讲栈的应用时，讲到用函数调用栈来保存临时变量，为什么函数调用要用“栈”来保存临时变量呢？用其他数据结构不行吗？<br>其实，我们不一定非要用栈来保存临时变量，只不过如果这个函数调用符合后进先出的特性，用栈这种数据结构来实现，是最顺理成章的选择。 </p>
-<p>从调用函数进入被调用函数，对于数据来说，变化的是什么呢？是作用域。所以根本上，只要能保证每进入一个新的函数，都是一个新的作用域就可以。而要实现这个，用栈就非常方便。在进入被调用函数的时候，分配一段栈空间给这个函数的变量，在函数结束的时候，将栈顶复位，正好回到调用函数的作用域内。</p>
-<p>###2.我们都知道，JVM 内存管理中有个“堆栈”的概念。栈内存用来存储局部变量和方法调用，堆内存用来存储 Java 中的对象。那 JVM 里面的“栈”跟我们这里说的“栈”是不是一回事呢？如果不是，那它为什么又叫作“栈”呢？<br>内存中的堆栈和数据结构堆栈不是一个概念，可以说内存中的堆栈是真实存在的物理区，数据结构中的堆栈是抽象的数据存储结构。</p>
-<p>内存空间在逻辑上分为三部分：代码区、静态数据区和动态数据区，动态数据区又分为栈区和堆区。</p>
-<p>代码区：存储方法体的二进制代码。高级调度（作业调度）、中级调度（内存调度）、低级调度（进程调度）控制代码区执行代码的切换。</p>
-<p>静态数据区：存储全局变量、静态变量、常量，常量包括final修饰的常量和String常量。系统自动分配和回收。</p>
-<p>栈区：存储运行方法的形参、局部变量、返回值。由系统自动分配和回收。</p>
-<p>堆区：new一个对象的引用或地址存储在栈区，指向该对象存储在堆区中的真实数据</p>
-<p>###3.除了线程池这种池结构会用到队列排队请求，你还知道有哪些类似的池结构或者场景中会用到队列的排队请求呢？</p>
-<p>分布式消息队列,如<strong>kafka</strong></p>
-<p>###4.并发队列中，关于如何实现无锁并发队列，网上有非常多的讨论。对这个问题，你怎么看呢？</p>
-<p>CAS+数组</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/%E6%A0%88+%E9%98%9F%E5%88%97%E9%97%AE%E9%A2%98/" data-id="ck5clk4gp000aa8wi9cz576yv" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linked-List" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/01/13/Linked-List/" class="article-date">
-  <time datetime="2020-01-13T15:11:02.000Z" itemprop="datePublished">2020-01-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/13/Linked-List/">Linked-List</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#2.链表</p>
-<p>##数组和链表</p>
-<p>链表对于随机插入删除的时间复杂度是O(1),数组是O(n)</p>
-<p>链表对于随机查询的时间复杂度是o(n),数组是O(1)</p>
-<p>链表<strong>不需要申请一块连续的内存</strong>，而数组<strong>需要申请一块连续的内存</strong> ，但是链表需要额外的空间储存指针，所以对于特定的一些情况来说就是属于<strong>空间换时间</strong>的概念</p>
-<p>如果代码对于内存要求苛刻，那么数组就比链表更适合。因为链表需要额外的空间储存指针，所以内存会翻倍，而且对链表的频繁做掺入、删除的操作会导致<strong>频繁的内存申请和释放</strong> ，如果是java语言，就会导致频繁的GC(垃圾回收)</p>
-<p>##2.LRU缓存淘汰算法</p>
-<p>###2.1缓存</p>
-<p>缓存是一种提高数据读取性能的技术，在硬件设计和软件开发中都有着十分广泛的应用，比如常见的CPU缓存、数据库缓存、浏览器缓存等等。</p>
-<p>常见的三种策略：FIFO先进先出（First In First Out）、LFU最少使用策略(Least Frequently Used)、最近最少使用策略LRU(Least Recently Used)。</p>
-<p>##3.使用哨兵来简化链表实现的难度</p>
-<p>如果我们想要往后node加一个节点，那么代码很简单</p>
-<pre><code>p-&gt;next = node-&gt;next;
-node-&gt;next = p;</code></pre><p>但是如果往头节点插入一个节点那么逻辑就不太一样了</p>
-<pre><code>if(head == null){
-    head = p;
-}
-else{
-    p-&gt;next = head;
-    head = p;
-}</code></pre><p>删除的时候我们也是一样要做页数处理，</p>
-<pre><code>if(head-&gt;next == null){
-    head = null;
-}</code></pre><p>接下来我们就要引入哨兵这个节点，使head指针一直指向这个哨兵节点,<br>哨兵节点value值为null，指针指向头节点,我们也把带有哨兵节点的链表叫做<strong>带头链表</strong></p>
-<img src="/2020/01/13/Linked-List/1.jpg" class="" title="This is an example image">
-
-<p>实际上，这种利用哨兵简化编程难度的技巧，在很多代码实现中都有用到，比如插入排序、归并排序、动态规划等.</p>
-<p>##4.链表单表反转实现(自己想的)</p>
-<p>定义一个function(pre,node),其中node为当前节点，pre为shang一节点,代码</p>
-<pre><code>function(pre,node){
-    if(node-&gt;next != null){
-        fun(node,node-&gt;next);
-    }
-    node-&gt;next = pre;
-}</code></pre><p>调用时就将null为pre，head为node传入，代码</p>
-<pre><code>function(null,head);</code></pre><p>##判断链表是否有环，如果有求环节点</p>
-<p>如何判断有环，我们可以定义一个faster节点和一个slower节点，faster一次走2步，即faster = faster-&gt;next-&gt;next。slower走一步，即slower = slower-&gt;next。如果有环应为速度不一样所以迟早会相遇。</p>
-<p>代码</p>
-<pre><code>ListNode judgeCycle(ListNode head)
-{
-    if(head == null)
-        return null;
-    ListNode faster=head;
-    ListNode slower=head;
-    boolean flag = false;
-    while(faster.next != null &amp;&amp; faster.next.next != null)
-    {
-        faster = faster.next.next;
-        slower = slower.next;
-        if (faster == slower) {
-            flag = true;
-               return ture;
-        }
-    }
-    return false;
-}</code></pre><p>如何求换节点，首先如图</p>
-<img src="/2020/01/13/Linked-List/2.jpg" class="" title="This is an example image">
-
-
-<p><strong>推理</strong></p>
-<p>设环的长度为c(即m+l）,<br>fast走的路程:s+cround1+m<br>low走的路程:s+cround2+m;<br>fast路程是low路程的两倍，所以得出<br>s=c(2round1-round2)-m<br>=c(2round1-round2-1)+c-m<br>=c(2round1-round2-1)+I</p>
-<p><strong>我们由此得到了结论</strong><br>起点到环入口点s和相遇点到环路口点I的等式关系。<br>这个等式关系就充分说明了当指针low链表头开始，指针fast从相遇点开始，同时以一个步长往下走，必然会在第一个公共点相遇，当然，式子告诉我们可能fast先绕着环转个几圈再和low相遇。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/Linked-List/" data-id="ck5clk4gd0003a8wi7va01aux" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/SkipList/" data-id="ck7b94tzv0009qwwib7jb8otv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -725,7 +877,7 @@ else{
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
     </div>
   </div>
 
@@ -738,23 +890,23 @@ else{
       <ul>
         
           <li>
-            <a href="/2020/01/13/HashTable-2/">HashTable-2</a>
+            <a href="/2020/03/03/OCP/">OCP</a>
           </li>
         
           <li>
-            <a href="/2020/01/13/HashTable-1/">HashTable-1</a>
+            <a href="/2020/03/03/SRP/">SRP</a>
           </li>
         
           <li>
-            <a href="/2020/01/13/Hash/">Hash</a>
+            <a href="/2020/03/03/OOP4/">OOP4</a>
           </li>
         
           <li>
-            <a href="/2020/01/13/SkipList/">SkipList</a>
+            <a href="/2020/03/03/OOP3/">OOP3</a>
           </li>
         
           <li>
-            <a href="/2020/01/13/halfFind/">halfFind</a>
+            <a href="/2020/03/03/OOP2/">OOP2</a>
           </li>
         
       </ul>

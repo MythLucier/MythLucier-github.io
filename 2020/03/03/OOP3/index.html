@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>OOP3 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#面向对象3 ##1.接口和抽象类的区别(Java) ####抽象 public abstract class Animal{     private String name;     private String like;     public Animal(String name, String like){...}     public abstract void eat(); }  pu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OOP3">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;03&#x2F;OOP3&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#面向对象3 ##1.接口和抽象类的区别(Java) ####抽象 public abstract class Animal{     private String name;     private String like;     public Animal(String name, String like){...}     public abstract void eat(); }  pu">
+<meta property="article:published_time" content="2020-03-03T02:04:10.000Z">
+<meta property="article:modified_time" content="2020-03-03T02:04:30.681Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-OOP3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/OOP3/" class="article-date">
+  <time datetime="2020-03-03T02:04:10.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      OOP3
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#面向对象3</p>
+<p>##1.接口和抽象类的区别(Java)</p>
+<p>####抽象</p>
+<pre><code>public abstract class Animal{
+    private String name;
+    private String like;
+    public Animal(String name, String like){...}
+    public abstract void eat();
+}
+
+public class Bird extends Animal{
+    private boolean canFly;
+    public Bird(String name, String like, boolean canFly){
+        super(name,like);
+        this.canFly = canFly;
+    }
+
+    @Override
+    public void eat(){...}
+}
+
+public class Dog extends Animal(){
+    private boolean isDanger;
+    public Dog(...){...}
+
+    @Override
+    public void eat(){...}
+}</code></pre><p><strong>1.</strong> 抽象类不允许被实例化，只能被继承。如果你强行去new一个抽象类就会报错。<br><strong>2.</strong> 抽象类可以包含属性和方法，其中不包含代码实现的方法叫做抽象方法。<br><strong>3.</strong> 子类继承抽象类，子类必须重写抽象类(父类)中的抽象方法。</p>
+<p>####接口</p>
+<pre><code>public interface Havior{
+    void fly();
+}
+
+public class Sparrow implements Havior{
+    @Override
+    void fly(){...}
+}
+
+public class Bee implements Havior{
+    @Override
+    void fly(){...}
+}</code></pre><p><strong>1.</strong> 接口中不能包含成员变量。其中声明的所有变量都会作为public static final使用(里面只能声明这种类型的变量)。<br><strong>2.</strong> 接口只能声明方法，方法不能包含代码实现。<br><strong>3.</strong> 类实现接口的时候，必须实现接口中声明的所有方法。</p>
+<p>####总结<br>抽象类实际上就是类，只不过是特殊类，抽象类中可以包含成员变量。接口中不能包含成员变量。类只能继承一个抽象类，但是能实现多个接口。抽象类和类像是<strong>is-a</strong>的区别，接口和类是<strong>has-a</strong>区别。对于接口，有一个更加形象的叫法， <strong>协议</strong>。</p>
+<p>##2.抽象类和接口分别能解决什么编程问题</p>
+<p>####抽象类<br>抽象类的作用不能被实例话，只能被继承。所以它的作用就是用来解决代码复用问题，还有实现多态。</p>
+<p>####接口<br>接口侧重于解耦，接口是对行为的一直抽象。调用这只需要关注抽象的接口，不需要了解具体实现。接口实现了方法和实现的分离，降低了代码的耦合性，提高了代码的可扩展性。</p>
+<p>##3.如何决定使用抽象还是接口<br>如果我们要表示一种<strong>is-a</strong>关系，为了去解决代码复用的问题，我们就用<strong>抽象</strong>。<br>如果我们要表示一种<strong>has-a</strong>关系，为了去抽象方法，我们就使用<strong>接口</strong>。</p>
+<p>##3.基于接口而非实现编程</p>
+<p>####3.1 如何解读其中的“接口”<br>这条原则的英文描述为<strong>“Program to an interface, not an implementation”</strong>。这条原则最早出现于GoF的《设计模式》中，是一条比较抽象、泛化的设计思想。应用这条原则可以非常有效的提高代码质量，将接口和实现分离，实现代码的解耦、高扩展。<br><strong>越抽象、越底层、越脱离具体实现的设计，越能提高代码的灵活性。在应对需求的变化时，好的代码设计，不仅可以应对当下的需求，还能够在以后需求需要变动时，在不破坏原有代码的情况下灵活应对。</strong></p>
+<p>####3.2 如何运用到实战中<br>极客时间-&gt;设计模式之美-&gt;09</p>
+<p>####3.3 是否所有类都要使用接口<br>肯定不是的，过度使用接口，会使接口泛滥，都导致许多功能单一的方法设计成接口，导致不必要的开发负担。只有在功能易变动，代码需要在扩展和维护方面下功夫等方面时，去使用接口才是一种正确的设计方式。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/OOP3/" data-id="ck7b94tzm0005qwwi793kgrr6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/03/OOP4/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          OOP4
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/03/OOP2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">OOP2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/03/03/OCP/">OCP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/SRP/">SRP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP4/">OOP4</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP3/">OOP3</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP2/">OOP2</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>SRP | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="#设计原则经典的设计原则SOLID，KISS，YAGIN，DRY，LOD等 ##1.单一职责原则(SRP) ####1.1 什么是单一职责原则(Single Responsibility Principle)SOLID并非只是一个原则，而是五个    设计原则组成的，而单一职责原则(SRP)就是其中的 S原则。它的原文描述是：A class or module should have a sing">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SRP">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;03&#x2F;SRP&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="#设计原则经典的设计原则SOLID，KISS，YAGIN，DRY，LOD等 ##1.单一职责原则(SRP) ####1.1 什么是单一职责原则(Single Responsibility Principle)SOLID并非只是一个原则，而是五个    设计原则组成的，而单一职责原则(SRP)就是其中的 S原则。它的原文描述是：A class or module should have a sing">
+<meta property="article:published_time" content="2020-03-03T02:05:40.000Z">
+<meta property="article:modified_time" content="2020-03-03T02:05:52.707Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.1.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-SRP" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/03/SRP/" class="article-date">
+  <time datetime="2020-03-03T02:05:40.000Z" itemprop="datePublished">2020-03-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SRP
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>#设计原则<br>经典的设计原则SOLID，KISS，YAGIN，DRY，LOD等</p>
+<p>##1.单一职责原则(SRP)</p>
+<p>####1.1 什么是单一职责原则(Single Responsibility Principle)<br><strong>SOLID</strong>并非只是一个原则，而是五个    设计原则组成的，而<strong>单一职责原则(SRP)</strong>就是其中的 <strong>S</strong>原则。它的原文描述是：<strong>A class or module should have a single reponsibility</strong>。<br>翻译过来就是，一个类或者模块应该只负责单一的责任(功能)。其中一个类也可以看成是一个模块，几个类也可以看成是一个模块，模块属于比较抽象的概念。<br>单一职责原则的定义非常简单，就是不要设计大而全的类，而是要设计粒度小、功能单一的类。如果一个类的功能不单单只有一个，而是有两个或以上，那它的职责就不单一了，应该将它拆分为粒度更小的类。</p>
+<p>####1.2 如何判断类的职责是否够单一<br>举个例子，就拿订单和用户信息来举例。订单和用户信息是两个完全没有关系，所以很容易判断出要分两个类。但是大部分情况下类的方法是分一个类还是两个类没那么容易判断，例如下面的UserInfo。</p>
+<pre><code>public class UserInfo { 
+    private long userId; 
+    private String username; 
+    private String email; 
+    private String telephone; 
+    private long createTime; 
+    private long lastLoginTime; 
+    private String avatarUrl; 
+    private String provinceOfAddress; // 省 
+    private String cityOfAddress; // 市 
+    private String regionOfAddress; // 区 
+    private String detailedAddress; // 详细地址 
+    // ......等等
+}</code></pre><p>可以看到上面的UserInfo类中记录了User的各种信息,但是我们是不是要将其中的地址信息抽提出来另写一个UserAddress类呢？如果这个产品中，用户地址信息和其他信息一样，只是单纯用来展示的，那么就没有必要抽提了。如果在其中添加了物流等一些模块，那么就有必要单独提取出来了。如果最后演变成了多个产品可以共用一个账号，那么就有必要将跟身份验证的信息(tel,email…)再抽提出来。<br>所以对于一个类的职责是否够单一，我们需要根据相应的应用场景来分析，不同的应用场景所分析出来的结果也会是不一样的。</p>
+<p>####1.3 如何写出职责单一的类<br>在实际的应用中，我们没必要一开始就一定要写出一个这样的类。我们可以先设计出一个<strong>稍微粗粒度的类</strong>，来满足业务的需求。在以后的开发中，再慢慢的进行修改，进行<strong>持续重构</strong>。<br>何时重构的例子：  </p>
+<p><strong>类中代码的函数或者属性过多，会影响到代码的可读性和可维护性，就需要对其进行思考是否可以拆分</strong>。  </p>
+<p><strong>类依赖其他的类太多，或者依赖类的其他类过多，有严重的耦合性，就需要进行考虑</strong>。  </p>
+<p><strong>私有方法过多，可以思考是否可以抽提出一个新的公用类，形成代码复用</strong>。  </p>
+<p><strong>当一个类的名字难以定义的时候，或者他的名字只能定义的很笼统的时候，就说明它的职责不够单一</strong>。</p>
+<p><strong>类中大量的方法都是集中操作类中的某几个属性，比如，在 UserInfo 例子中，如果一半的方法都是在操作 address 信息，那就可以考虑将这几个属性和对应的方法拆分出来</strong>。  </p>
+<p>####1.4 职责是不是越单一越好?<br>肯定是不是的,例如下面这个例子</p>
+<pre><code>/** 
+ * Protocol format: identifier-string;{gson string} 
+ * For example: UEUEUE;{&quot;a&quot;:&quot;A&quot;,&quot;b&quot;:&quot;B&quot;} 
+ */
+public class Serialization { 
+    private static final String IDENTIFIER_STRING = &quot;UEUEUE;&quot;; 
+    private Gson gson; 
+    public Serialization() { 
+        this.gson = new Gson(); 
+    } 
+    public String serialize(Map object){ 
+        StringBuilder textBuilder = new StringBuilder(); 
+        textBuilder.append(IDENTIFIER_STRING);
+        textBuilder.append(gson.toJson(object));
+        return textBuilder.toString(); 
+    } 
+    public Map deserialize(String text) { 
+        if (!text.startsWith(IDENTIFIER_STRING){ 
+            return Collections.emptyMap(); 
+        } 
+        String gsonStr = text.substring(IDENTIFIER_STRING.length()); 
+        return gson.fromJson(gsonStr, Map.class); 
+    }
+}</code></pre><p>如果我们想要这个Serialization类职责单一，是不是应该将它拆分为Serializer序列化类和DeSerializer反序列化类呢。肯定是不好的，因为序列化的规则应该是要统一的。如果将它分割为两个类，其中一个类的规则改变了，我们可能会忘记修改另外一个类，那么就会造成错误，所以这是不应该分开的。<br>所以类拆分的太细也是不好的，过度的拆分实际上会适得其反，反倒会降低类的内聚性，也会影响代码的可读性。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/03/SRP/" data-id="ck7b94tzr0007qwwi8j3s5tto" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/03/OCP/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          OCP
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/03/OOP4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">OOP4</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/03/03/OCP/">OCP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/SRP/">SRP</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP4/">OOP4</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP3/">OOP3</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/03/OOP2/">OOP2</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
